@@ -22,6 +22,7 @@ export default {
     index: Number
   },
   methods:{
+    test(){},
     // 删除单个按钮
     del(index) {
       this.$emit('delEvent',index)          //触发父组件的delEvent方法，并将index传过去
