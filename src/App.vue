@@ -35,6 +35,7 @@
               :item="item"
               @delEvent="delEvent"
               @singleSelect="singleSelect"
+              @handelEdit="edit"
             ></HelloWorld>
             <!-- <div class="clean"></div> -->
           </li>
@@ -72,6 +73,13 @@ export default {
     };
   },
   methods: {
+    edit(item){
+      console.log(item);
+      let editText=prompt("请输入需要修改的内容：");
+      if(editText != null && editText != ''){
+        item.eventText = editText; //赋值回给原来的item
+      }
+    },
     // 新增按钮
     addEvent() {
       console.log("click add");

@@ -8,7 +8,7 @@
       @change="sinSelect()"
     />
     <label for="singleCheck"></label>
-    <input class="read_text" id="edit" v-model="item.eventText" readonly />
+    <input class="read_text" v-model="item.eventText" readonly />
     <div style="display: inline">
       <button class="done_btn" @click="edit(item)">编辑</button>
       <button class="del_btn" @click="del(index)">删除</button>
@@ -30,19 +30,14 @@ export default {
   methods: {
     // 删除单个按钮
     del(index) {
-      this.$emit("delEvent", index); //触发父组件的delEvent方法，并将index传过去
+      // this.$emit("delEvent", index); //触发父组件的delEvent方法，并将index传过去
+      this.$parent.delEvent(index);     //在这个子组件中直接调用父组件的方法，结果与上面一行的代码一样
     },
     sinSelect() {
       this.$emit("singleSelect");
     },
     edit(item) {
-      console.log(item.id);
-      let editText=prompt("请输入需要修改的内容：");
-      if(editText != null && editText != ''){
-        document.querySelector('#edit').innerHTML=editText;
-        item.eventText = editText; //赋值回给原来的item
-        console.log(item);
-      }
+      this.$emit("handelEdit",item);
     },
   },
 };
