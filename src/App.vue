@@ -1,29 +1,29 @@
 <template>
   <div id="app">
     <h1>{{ todolistTitle }}</h1>
-    <div class="">
+    <div style="">
+      <el-row type="flex" class="row-bg" justify="center" align="middle">
+        <el-col :span="6" style="text-align: right; margin-right: 20px">
+          <el-checkbox v-model="allEvents.isSelect" @change="allSelect()">
+          </el-checkbox>
+        </el-col>
+        <el-col :span="6">
+          <el-input
+            class="input_text"
+            v-model="newEventText"
+            placeholder="请输入代办事项"
+          ></el-input>
+        </el-col>
+        <el-col :span="6" style="text-align: left; margin-left: 20px">
+          <button @click="addEvent()" class="el-button el-button--default">
+            新增
+          </button>
+          <button @click="delEvents()" class="el-button el-button--default">
+            删除
+          </button>
+        </el-col>
+      </el-row>
       <div class="">
-        <input
-          type="checkbox"
-          id="allCheck"
-          v-model="allEvents.isSelect"
-          @change="allSelect()"
-        />
-        <label for="allCheck"> </label>
-        <!-- <span>{{ allEvents.text }}</span> -->
-        <!-- <div style="display: inline"> -->
-        <input
-          class="input_text"
-          v-model="newEventText"
-          placeholder="请输入代办事项"
-        />
-        <!-- </div> -->
-
-        <!-- 全选框 -->
-        <div style="display: inline">
-          <button class="head_btn" @click="addEvent()">新增</button>
-          <button class="head_btn" @click="delEvents()">删除</button>
-        </div>
       </div>
 
       <div class="">
@@ -37,7 +37,6 @@
               @singleSelect="singleSelect"
               @handelEdit="edit"
             ></HelloWorld>
-            <!-- <div class="clean"></div> -->
           </li>
         </ul>
       </div>
@@ -73,10 +72,10 @@ export default {
     };
   },
   methods: {
-    edit(item){
+    edit(item) {
       console.log(item);
-      let editText=prompt("请输入需要修改的内容：");
-      if(editText != null && editText != ''){
+      let editText = prompt("请输入需要修改的内容：");
+      if (editText != null && editText != "") {
         item.eventText = editText; //赋值回给原来的item
       }
     },
@@ -120,7 +119,7 @@ export default {
         item.isSelect = this.allEvents.isSelect; //子复选框等于全选框的勾选状态
       });
     },
-    my(){},
+    my() {},
     // 单选复选框
     singleSelect() {
       //定义一个n来存储用户选了多少个复选框以作判断
@@ -174,19 +173,19 @@ li {
   list-style: none;
   margin-bottom: 5px;
 }
-button {
+/* button {
   margin-right: 10px;
   padding: 5px 23px;
   border-radius: 3px;
-}
-.input_text {
-  width: 30%;
+} */
+/* .input_text {
+  width: 200px;
   margin: 0 10px;
   padding: 10px;
-  outline: none;
-  border: 1px solid #9e9e9e;
+  outline: none; 
+  border: 1px solid #9e9e9e; 
   font-size: 15px;
-}
+} */
 /* .read_text {
   outline: none;
   border: none;
@@ -196,11 +195,11 @@ button {
   padding: 10px;
   font-size: 16px;
 } */
-.head_btn {
+/* .head_btn {
   background: white;
   border: 1px solid #9e9e9e;
-  /* outline: none; */
-}
+  outline: none; 
+} */
 /* .del_btn {
   color: white;
   background: #f76666;
