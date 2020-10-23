@@ -11,14 +11,17 @@
         />
         <label for="allCheck"> </label>
         <!-- <span>{{ allEvents.text }}</span> -->
+        <!-- <div style="display: inline"> -->
         <input
           class="input_text"
           v-model="newEventText"
           placeholder="请输入代办事项"
         />
+        <!-- </div> -->
+
         <!-- 全选框 -->
         <div style="display: inline">
-          <button class="head_btn" @click="addEvent">新增</button>
+          <button class="head_btn" @click="addEvent()">新增</button>
           <button class="head_btn" @click="delEvents()">删除</button>
         </div>
       </div>
@@ -26,21 +29,14 @@
       <div class="">
         <ul>
           <li v-for="(item, index) in eventList" :key="item.id">
-            <input
-              type="checkbox"
-              name=""
-              id="singleCheck"
-              v-model="item.isSelect"
-              @change="singleSelect()"
-            />
             <!-- 使用组件，并传参 -->
             <HelloWorld
               :index="index"
               :item="item"
               @delEvent="delEvent"
+              @singleSelect="singleSelect"
             ></HelloWorld>
-                      <!-- <div class="clean"></div> -->
-
+            <!-- <div class="clean"></div> -->
           </li>
         </ul>
       </div>
@@ -79,13 +75,17 @@ export default {
     // 新增按钮
     addEvent() {
       console.log("click add");
-      this.eventList.push({
-        id: this.newEventId++,
-        eventText: this.newEventText,
-        isSelect: false,
-      }),
-        console.dir(this.eventList);
+      if (this.newEventText == "") {
+        alert("内容为空，请输入内容。");
+      } else {
+        this.eventList.push({
+          id: this.newEventId++,
+          eventText: this.newEventText,
+          isSelect: false,
+        }),
+          console.dir(this.eventList);
         console.log(this.newEventId);
+      }
     },
     // 删除单个按钮
     delEvent(index) {
@@ -109,7 +109,7 @@ export default {
     // 全选复选框
     allSelect() {
       this.eventList.forEach((item) => {
-        item.isSelect = this.allEvents.isSelect;
+        item.isSelect = this.allEvents.isSelect; //子复选框等于全选框的勾选状态
       });
     },
     // 单选复选框
@@ -142,6 +142,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  /* background: gray; */
 }
 
 #nav {
@@ -170,11 +171,12 @@ button {
   border-radius: 3px;
 }
 .input_text {
-  width: 20%;
-  margin-right: 10px;
-  padding: 7px;
+  width: 30%;
+  margin: 0 10px;
+  padding: 10px;
   outline: none;
   border: 1px solid #9e9e9e;
+  font-size: 15px;
 }
 /* .read_text {
   outline: none;
@@ -188,6 +190,7 @@ button {
 .head_btn {
   background: white;
   border: 1px solid #9e9e9e;
+  /* outline: none; */
 }
 /* .del_btn {
   color: white;
