@@ -120,6 +120,7 @@ export default {
         item.isSelect = this.allEvents.isSelect; //子复选框等于全选框的勾选状态
       });
     },
+    my(){},
     // 单选复选框
     singleSelect() {
       //定义一个n来存储用户选了多少个复选框以作判断
