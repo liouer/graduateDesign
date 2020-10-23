@@ -1,22 +1,23 @@
 <template>
   <div class="hello">
     <el-row type="flex" class="row-bg" justify="center" align="middle">
-      <el-col :span="6" style="text-align: right; margin-right: 20px">
+      <el-col :span="8" style="text-align: right; margin-right: 20px">
         <el-checkbox v-model="item.isSelect" @change="sinSelect()" >
         </el-checkbox>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-input
           class="read_text"
           v-model="item.eventText"
           readonly
         ></el-input>
       </el-col>
-      <el-col :span="6" style="text-align: left; margin-left: 20px">
+      <el-col :span="8" style="text-align: left; margin-left: 20px">
         <el-button class="el-button el-button--default" @click="edit(item)">更改</el-button>
         <el-button class="el-button el-button--danger" @click="del(index)">删除</el-button>
       </el-col>
     </el-row>
+    
   </div>
 </template>
 
@@ -34,8 +35,8 @@ export default {
   methods: {
     // 删除单个按钮
     del(index) {
-      // this.$emit("delEvent", index); //触发父组件的delEvent方法，并将index传过去
-      this.$parent.delEvent(index); //在这个子组件中直接调用父组件的方法，结果与上面一行的代码一样
+      this.$emit("delEvent", index); //通知父组件执行的delEvent方法，并将index传过去
+      // this.$parent.delEvent(index); //在这个子组件中直接调用父组件的方法，结果与上面一行的代码一样
     },
     sinSelect() {
       this.$emit("singleSelect");

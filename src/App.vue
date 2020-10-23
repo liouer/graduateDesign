@@ -1,20 +1,20 @@
 <template>
   <div id="app">
-    <h1>{{ todolistTitle }}</h1>
-    <div style="">
-      <el-row type="flex" class="row-bg" justify="center" align="middle">
-        <el-col :span="6" style="text-align: right; margin-right: 20px">
+    <el-header style="margin-bottom: 20px">
+      <h1>{{ todolistTitle }}</h1>
+      <el-row type="flex" align="middle">
+        <el-col :span="8" style="text-align: right; margin-right: 20px">
           <el-checkbox v-model="allEvents.isSelect" @change="allSelect()">
           </el-checkbox>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="8">
           <el-input
             class="input_text"
-            v-model="newEventText"
-            placeholder="请输入代办事项"
+            v-model.trim="newEventText"
+            placeholder="请输入待办事项"
           ></el-input>
         </el-col>
-        <el-col :span="6" style="text-align: left; margin-left: 20px">
+        <el-col :span="8" style="text-align: left; margin-left: 20px">
           <button @click="addEvent()" class="el-button el-button--default">
             新增
           </button>
@@ -23,31 +23,42 @@
           </button>
         </el-col>
       </el-row>
-      <div class="">
-      </div>
-
-      <div class="">
-        <ul>
-          <li v-for="(item, index) in eventList" :key="item.id">
-            <!-- 使用组件，并传参 -->
-            <HelloWorld
-              :index="index"
-              :item="item"
-              @delEvent="delEvent"
-              @singleSelect="singleSelect"
-              @handelEdit="edit"
-            ></HelloWorld>
-          </li>
-        </ul>
-      </div>
-    </div>
+    </el-header>
+    <el-main style="margin-bottom: 10px">
+      <ul>
+        <li v-for="(item, index) in eventList" :key="item.id">
+          <!-- 使用组件，并传参 -->
+          <HelloWorld
+            :index="index"
+            :item="item"
+            @delEvent="delEvent"
+            @singleSelect="singleSelect"
+            @handelEdit="edit"
+          ></HelloWorld>
+        </li>
+      </ul>
+    </el-main>
+    <el-footer>
+      <el-row type="flex">
+        <el-col :span="4"></el-col>
+        <el-col :span="16">
+          <el-table :data="eventList" border style="width: 50%; margin: 0 auto;">
+            <el-table-column prop="eventText" label="待办事项"></el-table-column>
+            <el-table-column prop="creatTime" label="创建时间"></el-table-column>
+          </el-table>
+        </el-col>
+        <el-col :span="4"></el-col>
+      </el-row>
+      
+          
+    </el-footer>
   </div>
 </template>
 
 <script>
 import HelloWorld from "@/components/HelloWorld.vue"; //引入组件
 export default {
-  components: { HelloWorld }, //注册组件
+  components: { HelloWorld }, //注册组件（即组件声明）
   data() {
     return {
       todolistTitle: "TO DO LIST BY Liou",
@@ -57,18 +68,19 @@ export default {
       },
       newEventText: "",
       eventList: [
-        {
-          id: 1,
-          isSelect: false,
-          eventText: "吃饭",
-        },
-        {
-          id: 2,
-          isSelect: false,
-          eventText: "睡觉",
-        },
+        // {
+        //   id: 1,
+        //   isSelect: false,
+        //   eventText: "吃饭",
+        // },
+        // {
+        //   id: 2,
+        //   isSelect: false,
+        //   eventText: "睡觉",
+        // },
       ],
-      newEventId: 3,
+      newEventId: "",
+      creatTime: ""
     };
   },
   methods: {
@@ -89,8 +101,10 @@ export default {
           id: this.newEventId++,
           eventText: this.newEventText,
           isSelect: false,
+          creatTime: new Date().toLocaleDateString()
+
         }),
-          console.dir(this.eventList);
+        console.dir(this.eventList);
         console.log(this.newEventId);
       }
     },
