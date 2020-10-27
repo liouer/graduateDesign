@@ -1,15 +1,28 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+// import { component } from 'vue/types/umd'
+// import Home from '../views/Home.vue'
+import PageA from '@/components/PageA.vue'
+import PageB from '@/components/PageB.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
+  // {
+  //   path: '/',
+  //   name: 'Home',
+  //   component: Home
+  // },
   {
-    path: '/',
-    name: 'Home',
-    component: Home
+    path: '/PageA',
+    name: 'PageA',
+    component: PageA
   },
+  {
+    path: '/PageB',
+    name: PageB,
+    component: PageB
+  }
 ]
 
 const router = new VueRouter({
