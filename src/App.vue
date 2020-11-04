@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <!-- <el-header style="margin-bottom: 20px"> -->
-      <router-link to="/PageA">页面A</router-link>
+      <router-link to="/PageA">页面A（登录表单）</router-link>
       <router-link to="/PageB">页面B</router-link>
     <router-view></router-view>
   </div>
