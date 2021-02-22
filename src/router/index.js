@@ -5,6 +5,9 @@ import VueRouter from 'vue-router'
 import PageA from '@/components/PageA.vue'
 import PageB from '@/components/PageB.vue'
 
+import LoginA from '@/views/login/index.vue'
+
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -22,7 +25,13 @@ const routes = [
     path: '/PageB',
     name: PageB,
     component: PageB
+  },
+  {
+    path: '/login',
+    name: LoginA,
+    component: LoginA
   }
+
 ]
 
 const router = new VueRouter({
