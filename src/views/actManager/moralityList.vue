@@ -1,0 +1,624 @@
+<template>
+  <div class="list_cont">
+    <div class="tableTab">
+      <div class="table_title">
+        活动记录
+        <el-button plain class="fresh_btn" size="small" @click="getList()"
+          >刷新
+        </el-button>
+      </div>
+      <div class="table_title_btn">
+        <!-- <div class="search_box" style="margin-right:15px">
+          <el-input
+            size="small"
+            v-model="activities.title"
+            placeholder="请输入活动标题"
+          >
+            <el-button
+              slot="append"
+              icon="el-icon-search"
+              @click="searchBtn()"
+              >搜索</el-button
+            >
+          </el-input>
+        </div> -->
+        <el-button type="primary" size="medium" @click="showBox()"
+          >录入活动</el-button
+        >
+      </div>
+    </div>
+    <el-table
+      class="list_table"
+      stripe
+      ref="multipleTable"
+      :data="tableData"
+      tooltip-effect="dark"
+      height="85%"
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column width="55px"> </el-table-column>
+      <el-table-column prop="title" label="活动标题"> </el-table-column>
+      <el-table-column prop="one_type_name" label="活动类型" width="200px">
+      </el-table-column>
+      <el-table-column prop="start_time" label="活动举办时间">
+      </el-table-column>
+      <el-table-column prop="organizers_name" label="举办方"> </el-table-column>
+      <el-table-column prop="college_name" label="举办学院"> </el-table-column>
+      <el-table-column prop="type_str" label="对象类型" width="150px">
+      </el-table-column>
+      <el-table-column label="操作" width="270px">
+        <template slot-scope="scope">
+          <el-popover placement="bottom" width="120" trigger="hover">
+            <div>
+              <el-button
+                class="header_btn"
+                size="mini"
+                @click="signExcelBox(scope.$index, tableData)"
+                >Excel录入签到</el-button
+              >
+              <el-button
+                class="header_btn"
+                size="mini"
+                @click="signBox(scope.$index, tableData)"
+                >手动添加签到</el-button
+              >
+            </div>
+            <el-button slot="reference" size="mini">签到</el-button>
+          </el-popover>
+          <el-button
+            style="margin-left: 10px"
+            size="mini"
+            @click="signedBox(scope.$index, tableData)"
+            >查看签到</el-button
+          >
+          <el-button
+            style="margin-left: 10px"
+            size="mini"
+            @click="summaryBox(scope.$index, tableData)"
+            >活动纪要</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="dialog">
+      <el-dialog title="添加活动记录" :visible.sync="addFormVisible">
+        <el-form :model="form">
+          <el-form-item label="活动标题" :label-width="formLabelWidth">
+            <el-input v-model="form.title" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="活动类型" :label-width="formLabelWidth">
+            <el-radio v-model="form.one_type_id" :label="1">德育活动</el-radio>
+            <el-radio v-model="form.one_type_id" :label="2">智育活动</el-radio>
+            <el-radio v-model="form.one_type_id" :label="3">文体活动</el-radio>
+          </el-form-item>
+          <el-form-item label="活动举办时间" :label-width="formLabelWidth">
+            <el-input
+              placeholder="例如：2021-01-01"
+              v-model="form.start_time"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="举办方类型" :label-width="formLabelWidth">
+            <el-radio
+              :disabled="isCollegeType"
+              v-model="form.organizers_type"
+              :label="3"
+              >院级</el-radio
+            >
+            <el-radio
+              :disabled="isOrgType"
+              v-model="form.organizers_type"
+              :label="2"
+              >校级</el-radio
+            >
+            <el-radio
+              :disabled="isOrgType"
+              v-model="form.organizers_type"
+              :label="1"
+              >校外</el-radio
+            >
+          </el-form-item>
+          <el-form-item label="举办方" :label-width="formLabelWidth">
+            <el-input
+              :disabled="!isCollegeType"
+              v-model="form.organizers_name"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="举办学院" :label-width="formLabelWidth">
+            <el-input
+              :disabled="!isCollegeType"
+              v-model="form.college_name"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="参与对象类型" :label-width="formLabelWidth">
+            <el-radio v-model="form.type" :label="1">个人</el-radio>
+            <el-radio v-model="form.type" :label="2">团队</el-radio>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="addFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="isAdd(form)">确 定</el-button>
+        </div>
+      </el-dialog>
+    </div>
+    <div class="signDialog">
+      <el-dialog title="导入活动到场人员" :visible.sync="exportSignFormVisible">
+        <input
+          type="file"
+          id="fileExport"
+          @change="handleFileChange"
+          ref="inputer"
+          style="margin-left:70px;"
+          accept=".xls,.xlsx"
+        />
+        <div style="margin-top:10px">请上传Excel文件</div>
+        <el-button
+          style="float:right;"
+          type="primary"
+          @click="submitAddFile"
+          size="small"
+          >提交</el-button
+        >
+      </el-dialog>
+      <el-dialog title="添加活动到场人员" :visible.sync="signFormVisible">
+        <el-form :model="signForm" ref="signForm" label-width="80px">
+          <!-- <el-form-item
+            @keyup.enter.native="addDomain"
+            v-for="(domain, index) in signForm.domains"
+            :label="index + 1 + ''"
+            :key="domain.key"
+            :prop="'domains.' + index + '.value'"
+            :rules="{
+              required: true,
+              message: '请输入内容',
+              trigger: 'blur'
+            }"
+          >
+            <el-input v-model="domain.value"></el-input>
+            <el-button type="primary" plain @click="addDomain"
+              >继续添加</el-button
+            > -->
+          <el-form-item>
+            学号或工号：
+            <el-input v-model="signForm.sno"></el-input>
+            <!-- <el-button @click.prevent="removeDomain(domain)">删除</el-button> -->
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="signFormVisible = false">取 消</el-button>
+          <el-button @click="submitSign(signForm)">提交</el-button>
+          <!-- <el-button type="primary" @click="submitForm(signForm)"
+            >确 定</el-button
+          > -->
+        </div>
+      </el-dialog>
+    </div>
+    <div class="signedDialog">
+      <el-dialog title="查看签到信息" :visible.sync="signedFormVisible">
+        <el-table :data="signedForm" style="width: 100%">
+          <el-table-column prop="sno" label="学号/工号" width="180">
+          </el-table-column>
+          <el-table-column prop="name" label="姓名" width="180">
+          </el-table-column>
+          <el-table-column prop="college_name" label="学院"> </el-table-column>
+        </el-table>
+      </el-dialog>
+    </div>
+    <div class="summaryDialog">
+      <el-dialog title="活动纪要" :visible.sync="summaryFormVisible">
+        <el-input
+          type="textarea"
+          placeholder="活动纪要内容"
+          v-model="summary_content"
+          maxlength="200"
+          show-word-limit
+        >
+        </el-input>
+        <div style="float:right; margin-top:10px">
+          <el-button type="primary" plain="" @click="submitSummary(1)"
+            >提交</el-button
+          ><el-button type="primary" plain="" @click="submitSummary(0)"
+            >保存草稿</el-button
+          >
+          <el-button @click="summaryFormVisible = false">取消</el-button>
+        </div>
+      </el-dialog>
+    </div>
+  </div>
+</template>
+
+<script>
+import {
+  getActivityList,
+  getCollegeList,
+  addActivityAction,
+  importActivityJoinLogAction,
+  addActivityJoinLogAction,
+  getActivityJoinList,
+  setActivitySummaryAction,
+  getActivitySummaryAction,
+  saveActivitySummaryDraftAction
+} from "@/api/api";
+export default {
+  data() {
+    return {
+      activityDetail: {},
+      file: [],
+      formData: {},
+      summary_content: "", //活动纪要内容
+      signForm: {},
+      signedForm: [], // 签到列表数据
+      tableData: [], // 表格数据
+      form: {
+        one_type_id: 1,
+        organizers_type: JSON.parse(localStorage.getItem("userInfo"))
+          .college_admin_data.college_id
+          ? 3
+          : 2,
+        college_name: JSON.parse(localStorage.getItem("userInfo"))
+          .college_admin_data.college_name,
+        college_id: JSON.parse(localStorage.getItem("userInfo"))
+          .college_admin_data.college_id,
+        organizers_name: JSON.parse(localStorage.getItem("userInfo"))
+          .college_admin_data.college_name,
+        type: 1
+      }, // 添加框数据
+      // fileList: [], // 文件数据
+      addFormVisible: false, // 添加活动记录框
+      signFormVisible: false, //手动录入签到框
+      exportSignFormVisible: false, //excel导入签到框
+      signedFormVisible: false, //查看签到详情框
+      summaryFormVisible: false, //添加活动纪要框
+      formLabelWidth: "120px", //编辑框宽度
+      college_id: JSON.parse(localStorage.getItem("userInfo"))
+        .college_admin_data.college_id,
+      college_name: JSON.parse(localStorage.getItem("userInfo"))
+        .college_admin_data.college_name,
+      isOrgType: true,
+      isCollegeType: true,
+      activity_id: 0
+      // activities:[]
+    };
+  },
+  mounted() {
+    this.getList();
+  },
+  methods: {
+    // // 查找活动接口
+    // async searchBtn() {
+    //   this.activities = [];
+    //   //搜索活动，选择通过的活动
+    //   let search_data = {
+    //     search_title: this.form.search_title,
+    //     search_organizers_name: JSON.parse(localStorage.getItem("userInfo"))
+    //       .college_admin_data.college_name
+    //   };
+    //   //查找活动接口
+    //   let res = await getActivityList(search_data);
+    //   this.activities = res.content.list_data;
+    //   console.log("res :>> ", res);
+    // },
+    // 活动纪要提交按钮
+    async submitSummary(type) {
+      // 获取纪要活动内容
+      let summaryContent = await getActivitySummaryAction();
+      this.summary_content = res.content.data.summary_content;
+      console.log("summaryContent :>> ", summaryContent);
+
+      let data = {
+        activity_id: this.activity_id,
+        summary_content_draft: this.summary_content
+      };
+      // 保存活动纪要
+      let res = await saveActivitySummaryDraftAction(data);
+      console.log("res :>> ", res);
+    },
+    // 添加活动纪要框
+    async summaryBox(index, row) {
+      this.summaryFormVisible = true;
+      this.activity_id = row[index].activity_id;
+    },
+    // 打开查看签到框、获取签到列表
+    async signedBox(index, row) {
+      this.signedForm = [];
+      this.signedFormVisible = true;
+      let data = { activity_id: row[index].activity_id };
+      let res = await getActivityJoinList(data);
+      res.content.list_data.forEach(element => {
+        this.signedForm.push(element);
+      });
+      console.log("this.signedForm :>> ", this.signedForm);
+    },
+    // 去重
+    // unique(arr) {
+    //   const res = new Map();
+    //   return arr.filter(arr => !res.has(arr.id) && res.set(arr.id, 1));
+    // },
+    //提交单个签到按钮
+    async submitSign(val) {
+      val.activity_id = this.activityDetail.activity_id;
+      let res = await addActivityJoinLogAction(val);
+      console.log("res :>> ", res);
+      if (res.code === "200") {
+        this.$message({
+          type: "success",
+          message: "添加成功"
+        });
+        this.signFormVisible = false;
+      }
+    },
+    // 选择文件按钮
+    handleFileChange(e) {
+      console.log("e :>> ", e);
+      let inputDOM = this.$refs.inputer;
+      this.file = inputDOM.files[0]; // 通过DOM取文件数据
+      let size = Math.floor(this.file.size / 1024); //计算文件的大小
+      this.formData = new FormData(); //new一个formData事件
+      this.formData.append("file", this.file); //将file属性添加到formData里 //此时formData就是我们要向后台传的参数了
+      this.formData.append("activity_id", this.activityDetail.activity_id);
+      console.log(
+        "this.activityDetail.activity_id :>> ",
+        this.activityDetail.activity_id
+      );
+      console.log("this.file :>> ", this.file);
+      console.log("this.formData :>> ", this.formData);
+    },
+    // 提交文件按钮
+    async submitAddFile() {
+      // let res = await importActivityJoinLogAction(this.formData);
+    },
+
+    //打开excel导入签到框
+    signExcelBox(index, row) {
+      Object.assign(this.$data.signForm, this.$options.data().signForm);
+      this.exportSignFormVisible = true;
+      this.activityDetail = row[index];
+      console.log("row[index] :>> ", row[index]);
+    },
+    //打开手工签到框
+    signBox(index, row) {
+      // Object.assign(this.$data.signForm, this.$options.data().signForm);
+      this.signFormVisible = true;
+      this.activityDetail = row[index];
+      console.log("row[index] :>> ", row[index]);
+    },
+    //打开添加活动框
+    showBox() {
+      // 还原 原data的form数据
+      Object.assign(this.$data.form, this.$options.data().form);
+      if (this.college_id) {
+        this.isCollegeType = false;
+      } else {
+        this.isOrgType = false;
+      }
+      // this.form.one_type_id = 1;
+      // this.form.type = 1;
+      console.log("this.form :>> ", this.form);
+      this.addFormVisible = true;
+    },
+    // 手动处理活动记录
+    async isAdd(val) {
+      //执行添加接口
+      val.two_type_id = 1; //活动类型二级目录，当前需求不需要，设个默认值。
+      console.log("添加接口");
+      // 转换数据类型传给后端
+      console.log("this.form :>> ", this.form);
+      let res = await addActivityAction(val);
+      if (res.code === "200") {
+        this.$message({
+          type: "success",
+          message: "添加成功"
+        });
+        this.addFormVisible = false;
+        this.getList();
+      } else {
+        this.$message({
+          type: "error",
+          message: res.message
+        });
+      }
+      console.log("val :>> ", val);
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    async getList() {
+      this.tableData = [];
+      let res = await getActivityList();
+      console.log("res111:", res);
+      res.content.list_data.forEach(element => {
+        if (element.one_type_id === 1) {
+          this.tableData.push(element);
+        }
+      });
+      console.log("tableData:", this.tableData);
+    }
+    // 删除用户账号
+    // handleDelete(index, rows) {
+    //   let user_id = rows[index].user_id;
+    //   this.$confirm("此操作将永久删除该账号，是否继续？", "提示", {
+    //     confirmButtonText: "确定",
+    //     cancelButtonText: "取消",
+    //     type: "warning"
+    //   }).then(async () => {
+    //     let res = await deleteUserAction(user_id);
+    //     console.log("res:", res);
+    //     console.log("delete:tableData:", this.tableData);
+    //     console.log("index:", index);
+    //     console.log("rows:", rows);
+    //     if (res.code === "200") {
+    //       // 页面移除
+    //       this.$message({
+    //         type: "success",
+    //         message: "刪除成功"
+    //       });
+    //       rows.splice(index, 1);
+    //     }
+    //     // lse if (res.code === "401") {
+    //     //   this.$message({
+    //     //     message: "token已过期，请重新登录"
+    //     //   });
+    //     // }
+    //     else {
+    //       this.$message({
+    //         message: "删除失败，请重试"
+    //       });
+    //     }
+    //   });
+    // }
+    // submitForm(formName) {
+    //   console.log("formName :>> ", formName);
+    //   console.log("this.$refs[formName] :>> ", this.$refs[formName]);
+    //   // this.$refs[formName].validate(valid => {
+    //   //   if (valid) {
+    //   //     alert("submit!");
+    //   //   } else {
+    //   //     console.log("error submit!!");
+    //   //     return false;
+    //   //   }
+    //   // });
+    // },
+    // resetForm(formName) {
+    //   this.$refs[formName].resetFields();
+    // },
+    // removeDomain(item) {
+    //   var index = this.signForm.domains.indexOf(item);
+    //   if (index !== -1) {
+    //     this.signForm.domains.splice(index, 1);
+    //   }
+    // },
+    // addDomain() {
+    //   this.signForm.domains.push({
+    //     value: "",
+    //     key: Date.now()
+    //   });
+    // }
+  }
+};
+</script>
+
+<style scoped>
+.userBox >>> .el-button:focus,
+.el-button:hover {
+  color: #409eff;
+  border-color: #c6e2ff;
+  background-color: #fff;
+}
+.header_btn {
+  display: flex;
+  font-size: 14px;
+  /* margin-left: 20px; */
+  margin: 0 auto;
+  color: #413c69;
+  border: none;
+}
+.userBox {
+  display: flex;
+  float: right;
+}
+.list_cont {
+  /* display: flex; */
+  width: 98%;
+  height: 100%;
+  margin: 0 14px;
+  position: absolute;
+  top: 20px;
+}
+.tableTab {
+  background-color: rgb(255, 255, 255);
+  /* border: 2px solid rgb(120, 128, 208); */
+  /* width: 160px; */
+  height: 45px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table_title {
+  margin-left: 15px;
+}
+.table_title_btn {
+  margin-right: 15px;
+}
+.list_table {
+  /* width: 100%; */
+  /* border-radius: 5px; */
+  box-shadow: 0 10px 10px #888;
+}
+.list_table >>> .cell {
+  padding-left: 14px;
+}
+.list_head {
+  background-color: #fff;
+  height: 50px;
+}
+.fresh_btn {
+  margin-left: 15px;
+}
+.dialog >>> .el-dialog {
+  width: 30%;
+}
+/* .dialog >>> .el-select {
+  display: block;
+  width: 300px;
+} */
+.dialog >>> .el-input {
+  display: block;
+  margin-left: 25px;
+  width: 300px;
+}
+.dialog >>> .el-form-item__content {
+  width: 67%;
+}
+.dialog >>> .el-radio {
+  width: 80px;
+}
+.signDialog >>> .el-dialog__body {
+  height: 70px;
+}
+.signDialog >>> .el-dialog {
+  width: 30%;
+}
+.signDialog >>> .el-form-item__content {
+  display: flex;
+}
+.signDialog >>> .el-input {
+  width: 65%;
+}
+.signDialog >>> .el-input__inner {
+  width: 75%;
+}
+.upload {
+  display: inline-block;
+  width: 70px;
+  height: 38px;
+  line-height: 38px;
+  background: #3a8ff0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+}
+/*input 标签有默认的宽高border,outline*/
+.upload > input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*透明度为0*/
+  opacity: 0;
+  cursor: pointer;
+}
+.signedDialog >>> .el-dialog {
+  width: 35%;
+}
+.summaryDialog >>> .el-dialog {
+  width: 35%;
+  height: 350px;
+}
+.summaryDialog >>> textarea {
+  height: 200px;
+}
+</style>

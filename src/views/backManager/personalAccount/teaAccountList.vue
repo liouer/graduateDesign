@@ -1,0 +1,252 @@
+<template>
+  <div class="list_cont">
+    <div class="tableTab">
+      <div class="table_title">
+        教职工账号
+        <el-button plain class="fresh_btn" size="small" @click="getList()"
+          >刷新
+        </el-button>
+      </div>
+      <div class="table_title_btn">
+        <el-button type="primary" plain size="medium">Excel导入账号</el-button>
+        <el-button type="primary" plain size="medium" @click="showBox(1)"
+          >手动录入账号</el-button
+        >
+      </div>
+    </div>
+    <el-table
+      class="list_table"
+      stripe
+      ref="multipleTable"
+      :data="tableData"
+      tooltip-effect="dark"
+      height="85%"
+      @selection-change="handleSelectionChange"
+      v-if="isTea"
+    >
+      <!-- <el-table-column type="selection" width="55px"> </el-table-column> -->
+      <el-table-column width="55px"> </el-table-column>
+      <el-table-column prop="name" label="姓名"> </el-table-column>
+      <el-table-column prop="sno" label="工号（账号）"> </el-table-column>
+      <!-- <el-table-column prop="college_name" label="学院"> </el-table-column> -->
+      <el-table-column prop="phone" label="电话"> </el-table-column>
+      <el-table-column label="操作" width="150px">
+        <template slot-scope="scope">
+          <el-button size="mini" @click="showBox(2, scope.$index, tableData)"
+            >编辑</el-button
+          >
+          <el-button
+            size="mini"
+            type="danger"
+            @click.native.prevent="handleDelete(scope.$index, tableData)"
+            >删除</el-button
+          >
+        </template>
+      </el-table-column>
+    </el-table>
+    <div class="dialog">
+      <el-dialog title="修改教师账号" :visible.sync="addFormVisible">
+        <el-form :model="form">
+          <el-form-item label="工号（账号）" :label-width="formLabelWidth">
+            <el-input v-model="form.sno" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item
+            v-if="boxType === 1"
+            label="密码"
+            :label-width="formLabelWidth"
+          >
+            <el-input v-model="form.password" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="姓名" :label-width="formLabelWidth">
+            <el-input v-model="form.name" autocomplete="off"></el-input>
+          </el-form-item>
+          <el-form-item label="电话" :label-width="formLabelWidth">
+            <el-input v-model="form.phone" autocomplete="off"></el-input>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="addFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="isAdd(form)">确 定</el-button>
+        </div>
+      </el-dialog>
+    </div>
+  </div>
+</template>
+
+<script>
+import {
+  getUserList,
+  deleteUserAction,
+  getCollegeList,
+  editUserAction,
+  addUserAction
+} from "@/api/api";
+export default {
+  data() {
+    return {
+      tableData: [],
+      form: [],
+      isTea: false,
+      addFormVisible: false,
+      formLabelWidth: "120px", //编辑框宽度
+      boxType: 0
+    };
+  },
+  mounted() {
+    this.getList();
+  },
+  methods: {
+    showBox(type, index, row) {
+      // type = 1,则弹框为添加账号框
+      if (type === 1) {
+        this.form = {};
+        this.boxType = 1;
+      } else {
+        // 否则是编辑框
+        console.log("type,index,row :>> ", type, index, row);
+        console.log("row[index] :>> ", row[index]);
+        this.form = { ...row[index] }; //开辟新内存空间，防止表格数据污染
+        this.boxType = 2;
+      }
+      this.addFormVisible = true;
+    },
+    // 手动处理学生账号
+    async isAdd(val) {
+      val.type = 2; // 添加用户type属性，type=1为学生，type=2为教师
+      val.college_id = 1;
+      //执行添加接口
+      if (this.boxType === 1) {
+        console.log("添加接口");
+        let res = await addUserAction(val);
+        if (res.code === "200") {
+          this.$message({
+            type: "success",
+            message: "添加成功"
+          });
+          this.addFormVisible = false;
+          this.getList();
+        } else {
+          this.$message({
+            type: "error",
+            message: res.message
+          });
+        }
+      } else {
+        // 执行编辑接口
+        let res = await editUserAction(val);
+        if (res.code === "200") {
+          this.$message({
+            type: "success",
+            message: "修改成功"
+          });
+          this.addFormVisible = false;
+          this.getList();
+        }
+      }
+      console.log("val :>> ", val);
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    async getList() {
+      this.tableData = [];
+      let res = await getUserList();
+      console.log("res111:", res);
+      res.content.list_data.forEach(element => {
+        if (element.type === 2) {
+          this.isTea = true;
+          this.tableData.push(element);
+        }
+      });
+      console.log("tableData:", this.tableData);
+    },
+    // 删除用户账号
+    handleDelete(index, rows) {
+      let user_id = rows[index].user_id;
+      this.$confirm("此操作将永久删除该账号，是否继续？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(async () => {
+        let res = await deleteUserAction(user_id);
+        console.log("res:", res);
+        console.log("delete:tableData:", this.tableData);
+        console.log("index:", index);
+        console.log("rows:", rows);
+        if (res.code === "200") {
+          // 页面移除
+          this.$message({
+            type: "success",
+            message: "刪除成功"
+          });
+          rows.splice(index, 1);
+        }
+        // lse if (res.code === "401") {
+        //   this.$message({
+        //     message: "token已过期，请重新登录"
+        //   });
+        // }
+        else {
+          this.$message({
+            message: "删除失败，请重试"
+          });
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+.list_cont {
+  /* display: flex; */
+  width: 98%;
+  height: 100%;
+  margin: 0 14px;
+  position: absolute;
+  top: 20px;
+}
+.tableTab {
+  background-color: rgb(255, 255, 255);
+  /* border: 2px solid rgb(120, 128, 208); */
+  /* width: 160px; */
+  height: 45px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.table_title {
+  margin-left: 15px;
+}
+.table_title_btn {
+  margin-right: 15px;
+}
+.list_table {
+  /* width: 100%; */
+  /* border-radius: 5px; */
+  box-shadow: 0 10px 10px #888;
+}
+.list_table >>> .cell {
+  padding-left: 14px;
+}
+.list_head {
+  background-color: #fff;
+  height: 50px;
+}
+.fresh_btn {
+  margin-left: 15px;
+}
+.dialog >>> .el-dialog {
+  width: 30%;
+}
+/* .dialog >>> .el-select {
+  display: block;
+  width: 300px;
+} */
+.dialog >>> .el-input {
+  display: block;
+  margin-left: 25px;
+  width: 300px;
+}
+</style>
