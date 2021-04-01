@@ -7,30 +7,49 @@
           >刷新</el-button
         >
       </div>
-      <!-- <div style="float:right; margin-right:40px">
-        <el-button size="small" type="primary" @click="showAskBox()"
-          >发起申述</el-button
+    </div>
+    <div>
+      <el-select
+        style="background-color:#fff; float:right; width:150px; margin-right:65px"
+        size="small"
+        v-model="search_status"
+        placeholder="请选择申述状态"
+        @change="getList()"
+      >
+        <el-option
+          v-for="item in searchStatus"
+          :key="item.value"
+          :label="item.label"
+          :value="item.value"
         >
-      </div> -->
+        </el-option>
+      </el-select>
     </div>
     <div class="list_body">
       <el-table :data="tableData" stripe style="width: 100%">
-        <el-table-column width="55px"> </el-table-column>
-        <el-table-column prop="statement_id" label="申述ID" width="100px">
+        <el-table-column width="30px"> </el-table-column>
+        <el-table-column
+          sortable
+          prop="statement_id"
+          label="申述ID"
+          width="100px"
+        >
         </el-table-column>
-        <el-table-column prop="title" label="活动标题"> </el-table-column>
-        <el-table-column prop="one_type_name" label="活动类型">
+        <el-table-column sortable prop="title" label="活动标题">
         </el-table-column>
-        <el-table-column prop="organizers_type_str" label="举办方类型">
+        <el-table-column sortable prop="one_type_name" label="活动类型">
         </el-table-column>
-        <el-table-column prop="organizers_name" label="举办方">
+        <el-table-column sortable prop="organizers_type_str" label="举办方类型">
         </el-table-column>
-        <el-table-column prop="start_time" label="活动举办时间">
+        <el-table-column sortable prop="organizers_name" label="举办方">
         </el-table-column>
-        <el-table-column prop="add_time" label="提交申述时间">
+        <el-table-column sortable prop="start_time" label="活动举办时间">
         </el-table-column>
-        <el-table-column prop="status_str" label="申述状态"> </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column sortable prop="add_time" label="提交申述时间">
+        </el-table-column>
+        <el-table-column sortable prop="status_str" label="申述状态">
+        </el-table-column>
+        <el-table-column label="操作" width="160px">
           <template slot-scope="scope">
             <el-button
               :disabled="tableData[scope.$index].status !== 0"
@@ -50,6 +69,7 @@
             </el-button>
           </template>
         </el-table-column>
+        <el-table-column width="20px"> </el-table-column>
       </el-table>
     </div>
     <div class="addAskDialog">
@@ -109,6 +129,14 @@ import {
 export default {
   data() {
     return {
+      searchStatus: [
+        { label: "全部", value: "" },
+        { label: "申述中", value: "0" },
+        { label: "已通过", value: "1" },
+        { label: "已拒绝", value: "2" },
+        { label: "已取消", value: "3" }
+      ],
+      search_status: "", //申述状态：0申述中，1已通过，2已拒绝，3已取消
       statement_id: 0, //选择的申述id
       status: 0, //选择的申述状态
       activities: [], //申述活动归属列表选择
@@ -194,7 +222,10 @@ export default {
     // 获取申述列表
     async getList() {
       this.tableData = [];
-      let res = await getCollegeStatementList();
+      let data = {
+        search_status: this.search_status
+      };
+      let res = await getCollegeStatementList(data);
       console.log("res:", res);
       res.content.list_data.forEach(element => {
         this.tableData.push(element);

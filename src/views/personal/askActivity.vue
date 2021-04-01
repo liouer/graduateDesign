@@ -15,19 +15,51 @@
     </div>
     <div class="list_body">
       <el-table :data="tableData" stripe style="width: 100%">
-        <el-table-column width="55px"> </el-table-column>
-        <el-table-column prop="statement_id" label="申述ID"> </el-table-column>
-        <el-table-column prop="title" label="活动标题"> </el-table-column>
-        <el-table-column prop="start_time" label="活动类型"> </el-table-column>
-        <el-table-column prop="organizers_type_str" label="举办方类型">
+        <el-table-column width="50px"> </el-table-column>
+        <el-table-column
+          prop="statement_id"
+          label="申述ID"
+          width="90px"
+          sortable
+        >
+        </el-table-column>
+        <el-table-column prop="title" label="活动标题" sortable>
+        </el-table-column>
+        <el-table-column
+          prop="one_type_name"
+          label="活动类型"
+          width="150px"
+          sortable
+        >
+        </el-table-column>
+        <el-table-column
+          prop="organizers_type_str"
+          label="举办方类型"
+          width="150px"
+          sortable
+        >
         </el-table-column>
         <el-table-column prop="organizers_name" label="举办方">
         </el-table-column>
-        <el-table-column prop="start_time" label="活动举办时间">
+        <el-table-column prop="start_time" label="活动举办时间" sortable>
+          <template slot-scope="scope">
+            <i class="el-icon-time"></i>
+            <span style="margin-left:5px">{{ scope.row.start_time }}</span>
+          </template>
         </el-table-column>
-        <el-table-column prop="add_time" label="提交申述时间">
+        <el-table-column prop="add_time" label="提交申述时间" sortable>
+          <template slot-scope="scope">
+            <i class="el-icon-time"></i>
+            <span style="margin-left:5px">{{ scope.row.add_time }}</span>
+          </template>
         </el-table-column>
-        <el-table-column prop="status_str" label="申述状态"> </el-table-column>
+        <el-table-column
+          prop="status_str"
+          label="申述状态"
+          width="150px"
+          sortable
+        >
+        </el-table-column>
         <el-table-column label="操作" width="150px">
           <template slot-scope="scope">
             <el-button

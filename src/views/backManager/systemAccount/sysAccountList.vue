@@ -58,10 +58,16 @@
       >
         <!-- <el-table-column type="selection" width="55px"> </el-table-column> -->
         <el-table-column width="55px"> </el-table-column>
-        <el-table-column prop="username" label="账号" width="120px">
+        <el-table-column prop="username" label="账号" width="120px" sortable>
         </el-table-column>
-        <el-table-column prop="college_name" label="学院"> </el-table-column>
-        <el-table-column prop="add_time" label="添加时间" show-overflow-tooltip>
+        <el-table-column prop="college_name" label="学院" sortable>
+        </el-table-column>
+        <el-table-column
+          prop="add_time"
+          label="添加时间"
+          sortable
+          show-overflow-tooltip
+        >
         </el-table-column>
         <el-table-column label="操作" width="150px">
           <template slot-scope="scope">
@@ -118,8 +124,14 @@
       >
         <!-- <el-table-column type="selection" width="55px"> </el-table-column> -->
         <el-table-column width="55px"> </el-table-column>
-        <el-table-column prop="username" label="账号"> </el-table-column>
-        <el-table-column prop="add_time" label="添加时间" show-overflow-tooltip>
+        <el-table-column prop="username" label="账号" sortable>
+        </el-table-column>
+        <el-table-column
+          prop="add_time"
+          label="添加时间"
+          sortable
+          show-overflow-tooltip
+        >
         </el-table-column>
         <el-table-column label="操作" width="150px">
           <template slot-scope="scope">
@@ -260,23 +272,23 @@ export default {
     };
   },
   watch: {
-    "searchActParam.college_id": {
-      handler(newVal) {
-        if (this.searchActParam.college_id === "") {
-          this.search_type = "";
-          this.getList1();
-          return;
-        }
-        if (this.searchActParam.college_id === 0) {
-          this.search_type = 2;
-          this.getList1();
-          return;
-        }
-        this.search_type = 1;
-        this.getList1();
-      },
-      deep: true
-    }
+    // "searchActParam.college_id": {
+    //   handler(newVal) {
+    //     if (this.searchActParam.college_id === "") {
+    //       this.search_type = "";
+    //       this.getList1();
+    //       return;
+    //     }
+    //     if (this.searchActParam.college_id === 0) {
+    //       this.search_type = 2;
+    //       this.getList1();
+    //       return;
+    //     }
+    //     this.search_type = 1;
+    //     this.getList1();
+    //   },
+    //   deep: true
+    // }
   },
   async mounted() {
     console.log("mounted");
@@ -377,6 +389,7 @@ export default {
     },
     // 重新获取活动管理员列表
     freshActList() {
+      this.tableData1 = [];
       Object.assign(
         this.$data.searchActParam,
         this.$options.data().searchActParam
@@ -386,6 +399,7 @@ export default {
     },
     // 重新获取系统管理员列表
     freshSysList() {
+      this.tableData = [];
       Object.assign(
         this.$data.searchSysParam,
         this.$options.data().searchSysParam

@@ -99,6 +99,12 @@ const routes = [
         name: 'askActivity',
         component: () => import('@/views/personal/askActivity.vue')
       },
+      // 活动广场
+      {
+        path: 'activityTalk',
+        name: 'activityTalk',
+        component: () => import('@/views/personal/activityTalk.vue')
+      }
 
     ]
   }

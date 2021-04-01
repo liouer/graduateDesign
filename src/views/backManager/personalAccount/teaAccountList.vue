@@ -7,11 +7,82 @@
           >刷新
         </el-button>
       </div>
-      <div class="table_title_btn">
+    </div>
+    <div class="table_title_btn">
+      <div class="title_btn">
         <el-button type="primary" plain size="medium">Excel导入账号</el-button>
         <el-button type="primary" plain size="medium" @click="showBox(1)"
           >手动录入账号</el-button
         >
+      </div>
+      <div class="search_head">
+        <el-input
+          size="small"
+          v-model="searchUserParam.search_name"
+          placeholder="请输入姓名"
+        >
+          <el-button
+            size="small"
+            slot="append"
+            icon="el-icon-search"
+            @click="getList()"
+            >搜索</el-button
+          >
+        </el-input>
+        <el-popover class="popoverBox" placement="bottom">
+          <!-- <div> -->
+          <el-form :model="searchUserParam">
+            <el-form-item label="学院">
+              <el-select
+                v-model="searchUserParam.search_college_id"
+                placeholder="请选择学院"
+                size="small"
+                @click.native="
+                  selectColleges(searchUserParam.search_college_id)
+                "
+              >
+                <el-option
+                  v-for="item in colleges"
+                  :key="item.college_id"
+                  :label="item.name"
+                  :value="item.college_id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+
+            <el-form-item label="账号">
+              <el-input
+                size="small"
+                v-model="searchUserParam.search_sno"
+                placeholder="请输入账号"
+              >
+              </el-input>
+            </el-form-item>
+            <el-form-item label="电话号码">
+              <el-input
+                size="small"
+                v-model="searchUserParam.search_phone"
+                placeholder="请输入电话号码"
+              >
+              </el-input
+            ></el-form-item>
+          </el-form>
+          <!-- </div> -->
+          <div style="text-align: right; margin: 0">
+            <el-button size="mini" type="danger" @click="getList()"
+              >搜索</el-button
+            >
+            <el-button size="mini" @click="freshUserList()">重置</el-button>
+          </div>
+          <el-button
+            size="small"
+            class="advance_search"
+            icon="el-icon-d-arrow-right"
+            slot="reference"
+            >高级筛选</el-button
+          >
+        </el-popover>
       </div>
     </div>
     <el-table
@@ -26,10 +97,12 @@
     >
       <!-- <el-table-column type="selection" width="55px"> </el-table-column> -->
       <el-table-column width="55px"> </el-table-column>
-      <el-table-column prop="name" label="姓名"> </el-table-column>
-      <el-table-column prop="sno" label="工号（账号）"> </el-table-column>
-      <!-- <el-table-column prop="college_name" label="学院"> </el-table-column> -->
-      <el-table-column prop="phone" label="电话"> </el-table-column>
+      <el-table-column prop="name" label="姓名" sortable> </el-table-column>
+      <el-table-column prop="sno" label="工号（账号）" sortable>
+      </el-table-column>
+      <el-table-column prop="college_name" label="学院" sortable>
+      </el-table-column>
+      <el-table-column prop="phone" label="电话" sortable> </el-table-column>
       <el-table-column label="操作" width="150px">
         <template slot-scope="scope">
           <el-button size="mini" @click="showBox(2, scope.$index, tableData)"
@@ -43,6 +116,7 @@
           >
         </template>
       </el-table-column>
+      <el-table-column width="45px"> </el-table-column>
     </el-table>
     <div class="dialog">
       <el-dialog title="修改教师账号" :visible.sync="addFormVisible">
@@ -89,13 +163,31 @@ export default {
       isTea: false,
       addFormVisible: false,
       formLabelWidth: "120px", //编辑框宽度
-      boxType: 0
+      boxType: 0,
+      searchUserParam: {
+        search_college_id: "",
+        search_name: "",
+        search_phone: "",
+        search_sno: "",
+        search_class: "",
+        search_type: 2
+      },
+      colleges: []
     };
   },
   mounted() {
     this.getList();
   },
   methods: {
+    // 将搜索框重置再刷新列表
+    freshUserList() {
+      Object.assign(
+        this.$data.searchUserParam,
+        this.$options.data().searchUserParam
+      );
+      this.tableData = [];
+      this.getList();
+    },
     showBox(type, index, row) {
       // type = 1,则弹框为添加账号框
       if (type === 1) {
@@ -109,6 +201,23 @@ export default {
         this.boxType = 2;
       }
       this.addFormVisible = true;
+    },
+    // 学院select框选择
+    async selectColleges(val) {
+      console.log("this.colleges :>> ", this.colleges);
+      // 避免多次请求接口
+      if (this.colleges.length > 1) {
+        console.log(
+          "searchUserParam.college :>> ",
+          this.searchUserParam.college
+        );
+        return;
+      }
+      let res = await getCollegeList();
+      console.log("res.content.list_data :>> ", res.content.list_data);
+      res.content.list_data.forEach(element => {
+        this.colleges.push(element);
+      });
     },
     // 手动处理学生账号
     async isAdd(val) {
@@ -150,7 +259,9 @@ export default {
     },
     async getList() {
       this.tableData = [];
-      let res = await getUserList();
+      let data = this.searchUserParam;
+      console.log("data :>> ", data);
+      let res = await getUserList(data);
       console.log("res111:", res);
       res.content.list_data.forEach(element => {
         if (element.type === 2) {
@@ -199,7 +310,6 @@ export default {
 
 <style scoped>
 .list_cont {
-  /* display: flex; */
   width: 98%;
   height: 100%;
   margin: 0 14px;
@@ -220,7 +330,13 @@ export default {
   margin-left: 15px;
 }
 .table_title_btn {
-  margin-right: 15px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.title_btn {
+  margin-left: 15px;
 }
 .list_table {
   /* width: 100%; */
@@ -248,5 +364,21 @@ export default {
   display: block;
   margin-left: 25px;
   width: 300px;
+}
+.search_head {
+  margin-right: 25px;
+}
+.search_head >>> .el-input-group {
+  width: 207px;
+  margin-right: 10px;
+}
+.popoverBox {
+  margin-right: 40px;
+}
+.advance_search >>> .el-icon-d-arrow-right {
+  transform: rotate(-90deg);
+}
+.advance_search:focus >>> .el-icon-d-arrow-right {
+  transform: rotate(90deg);
 }
 </style>

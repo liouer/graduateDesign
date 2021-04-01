@@ -15,6 +15,7 @@
         >
           <el-menu-item index="1">活动记录</el-menu-item>
           <el-menu-item index="2">活动申述</el-menu-item>
+          <el-menu-item index="3">活动广场</el-menu-item>
         </el-menu>
       </div>
     </el-aside>
@@ -141,6 +142,9 @@ export default {
           break;
         case "2":
           this.$router.push({ path: "/personal/askActivity" });
+          break;
+        case "3":
+          this.$router.push({ path: "/personal/activityTalk" });
           break;
         default:
           break;

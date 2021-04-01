@@ -1,8 +1,8 @@
 <template>
   <div class="content">
     <div class="list_head">
-      <div style="margin-left:15px">
-        活动记录
+      <div style="margin-left:20px">
+        全部活动
         <el-button style="margin-left:15px" size="mini" @click="refresh()"
           >刷新</el-button
         >
@@ -93,28 +93,47 @@
       </div>
     </div>
     <div class="list_body">
-      <el-table :data="tableData" stripe style="width: 100%">
-        <el-table-column width="50px"> </el-table-column>
-        <el-table-column prop="title" label="活动标题" sortable>
-        </el-table-column>
-        <el-table-column prop="one_type_name" label="活动类型" sortable>
-        </el-table-column>
-        <el-table-column prop="organizers_type_str" label="活动级别" sortable>
-        </el-table-column>
-        <el-table-column prop="start_time" label="活动举办时间" sortable>
-          <template slot-scope="scope">
-            <i class="el-icon-time"></i>
-            <span style="margin-left:5px">{{ scope.row.start_time }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="organizers_name" label="举办方" sortable>
-        </el-table-column>
-        <el-table-column prop="college_name" label="举办学院" sortable>
-        </el-table-column>
-        <el-table-column prop="type_str" label="对象类型" sortable>
-        </el-table-column>
-        <!-- <el-table-column width="55px"> </el-table-column> -->
-      </el-table>
+      <div
+        class="card_size"
+        v-for="(o, index) in 8"
+        :key="o"
+        :offset="index > 0 ? 0 : 0"
+      >
+        <el-card shadow="hover" :body-style="{ padding: '0px' }">
+          <img
+            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
+            class="image"
+          />
+          <div style="padding: 14px;">
+            <span>好吃的汉堡</span>
+            <div class="bottom clearfix">
+              <time class="time">{{ currentDate }}</time>
+              <el-button type="text" class="button">操作按钮</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
+      <div
+        class="card_size"
+        v-for="(o, index) in 5"
+        :key="o"
+        :offset="index > 0 ? 0 : 0"
+      >
+        <el-card shadow="hover" :body-style="{ padding: '0px' }">
+          <!-- src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png" -->
+          <img
+            src="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+            class="image"
+          />
+          <div style="padding: 14px;">
+            <span>好吃的汉堡</span>
+            <div class="bottom clearfix">
+              <time class="time">{{ currentDate }}</time>
+              <el-button type="text" class="button">操作按钮</el-button>
+            </div>
+          </div>
+        </el-card>
+      </div>
     </div>
   </div>
 </template>
@@ -218,8 +237,12 @@ export default {
   justify-content: space-between;
 }
 .list_body {
+  display: flex;
+  padding-top: 20px;
+  /* justify-content: space-between; */
+  flex-wrap: wrap;
   background-color: #fff;
-  height: 94%;
+  /* height: 94%; */
   box-shadow: 0 10px 10px #888;
 }
 .advance_search >>> .el-icon-d-arrow-right {
@@ -239,5 +262,41 @@ export default {
 }
 .search_head >>> .el-popover {
   margin-right: 40px;
+}
+/* 卡片样式 */
+.time {
+  font-size: 13px;
+  color: #999;
+}
+
+.bottom {
+  margin-top: 13px;
+  line-height: 12px;
+}
+
+.button {
+  padding: 0;
+  float: right;
+}
+
+.image {
+  width: 100%;
+  height: 250px;
+  display: block;
+}
+
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+}
+
+.clearfix:after {
+  clear: both;
+}
+.card_size {
+  height: 380px;
+  margin: 0 16px;
+  width: 300px;
 }
 </style>

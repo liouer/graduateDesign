@@ -7,24 +7,77 @@
           >刷新
         </el-button>
       </div>
-      <div class="table_title_btn">
-        <!-- <div class="search_box" style="margin-right:15px">
+    </div>
+    <div class="table_title_btn">
+      <el-button
+        style="margin-left:15px"
+        type="primary"
+        size="medium"
+        @click="showBox()"
+        >录入活动</el-button
+      >
+      <div class="search_box">
+        <div class="search_input">
           <el-input
             size="small"
-            v-model="activities.title"
+            v-model="searchParam.search_title"
             placeholder="请输入活动标题"
           >
-            <el-button
-              slot="append"
-              icon="el-icon-search"
-              @click="searchBtn()"
+            <el-button slot="append" icon="el-icon-search" @click="getList()"
               >搜索</el-button
             >
           </el-input>
-        </div> -->
-        <el-button type="primary" size="medium" @click="showBox()"
-          >录入活动</el-button
-        >
+        </div>
+        <el-popover placement="bottom">
+          <!-- <div> -->
+          <el-form :model="searchParam">
+            <!-- <el-form-item label="活动举办年度">
+              <el-date-picker
+                v-model="searchParam.year"
+                type="year"
+                placeholder="选择年份"
+                value-format="yyyy"
+              >
+              </el-date-picker>
+            </el-form-item> -->
+            <el-form-item label="活动级别">
+              <el-select
+                size="small"
+                v-model="searchParam.search_organizers_type"
+                placeholder="请选择活动级别"
+              >
+                <el-option
+                  v-for="item in select_organizers_type"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="举办方">
+              <el-input
+                size="small"
+                v-model="searchParam.search_organizers_name"
+                placeholder="请输入举办方名称"
+              ></el-input>
+            </el-form-item>
+          </el-form>
+          <!-- </div> -->
+          <div style="text-align: right; margin: 0">
+            <el-button size="mini" type="danger" @click="getList()"
+              >搜索</el-button
+            >
+            <el-button size="mini" @click="refresh()">重置</el-button>
+          </div>
+          <el-button
+            size="small"
+            class="advance_search"
+            icon="el-icon-d-arrow-right"
+            slot="reference"
+            >高级筛选</el-button
+          >
+        </el-popover>
       </div>
     </div>
     <el-table
@@ -36,25 +89,26 @@
       height="85%"
       @selection-change="handleSelectionChange"
     >
-      <el-table-column width="55px"> </el-table-column>
-      <el-table-column prop="title" label="活动标题"> </el-table-column>
-      <el-table-column prop="one_type_name" label="活动类型" width="200px">
+      <el-table-column width="30px"> </el-table-column>
+      <el-table-column sortable prop="title" label="活动标题">
       </el-table-column>
-      <el-table-column prop="start_time" label="活动举办时间">
+      <el-table-column sortable prop="organizers_type_str" label="活动级别">
       </el-table-column>
-      <el-table-column prop="organizers_name" label="举办方"> </el-table-column>
-      <el-table-column prop="college_name" label="举办学院"> </el-table-column>
-      <el-table-column prop="type_str" label="对象类型" width="150px">
+      <el-table-column sortable prop="start_time" label="活动举办时间">
       </el-table-column>
-      <el-table-column label="操作" width="270px">
+      <el-table-column sortable prop="organizers_name" label="举办方">
+      </el-table-column>
+      <el-table-column sortable prop="type_str" label="对象类型">
+      </el-table-column>
+      <el-table-column label="操作" width="300px">
         <template slot-scope="scope">
           <el-popover placement="bottom" width="120" trigger="hover">
             <div>
               <el-button
                 class="header_btn"
                 size="mini"
-                @click="signExcelBox(scope.$index, tableData)"
-                >Excel录入签到</el-button
+                @click="signedBox(scope.$index, tableData)"
+                >查看签到</el-button
               >
               <el-button
                 class="header_btn"
@@ -62,20 +116,26 @@
                 @click="signBox(scope.$index, tableData)"
                 >手动添加签到</el-button
               >
+              <el-button
+                class="header_btn"
+                size="mini"
+                @click="signExcelBox(scope.$index, tableData)"
+                >Excel录入签到</el-button
+              >
             </div>
             <el-button slot="reference" size="mini">签到</el-button>
           </el-popover>
           <el-button
             style="margin-left: 10px"
             size="mini"
-            @click="signedBox(scope.$index, tableData)"
-            >查看签到</el-button
+            @click="summaryBox(scope.$index, tableData)"
+            >活动纪要</el-button
           >
           <el-button
             style="margin-left: 10px"
             size="mini"
-            @click="summaryBox(scope.$index, tableData)"
-            >活动纪要</el-button
+            @click="activityTalkBtn(scope.$index, tableData)"
+            >活动展示详情</el-button
           >
         </template>
       </el-table-column>
@@ -278,28 +338,46 @@ export default {
         .college_admin_data.college_name,
       isOrgType: true,
       isCollegeType: true,
-      activity_id: 0
-      // activities:[]
+      activity_id: 0,
+      searchParam: {
+        search_one_type_id: "",
+        search_organizers_type: "",
+        search_organizers_name: "",
+        search_title: "",
+        search_year: ""
+      },
+      select_organizers_type: [
+        { value: "3", label: "院级" },
+        { value: "2", label: "校级" }
+      ],
+      colleges: []
     };
   },
   mounted() {
     this.getList();
+    this.selectColleges();
   },
   methods: {
-    // // 查找活动接口
-    // async searchBtn() {
-    //   this.activities = [];
-    //   //搜索活动，选择通过的活动
-    //   let search_data = {
-    //     search_title: this.form.search_title,
-    //     search_organizers_name: JSON.parse(localStorage.getItem("userInfo"))
-    //       .college_admin_data.college_name
-    //   };
-    //   //查找活动接口
-    //   let res = await getActivityList(search_data);
-    //   this.activities = res.content.list_data;
-    //   console.log("res :>> ", res);
-    // },
+    // 刷新按钮，并重置搜索框的内容
+    refresh() {
+      Object.assign(this.$data.searchParam, this.$options.data().searchParam);
+      this.tableData = [];
+      this.getList();
+    },
+    // 学院select框选择
+    async selectColleges(val) {
+      console.log("this.colleges :>> ", this.colleges);
+      // 避免多次请求接口
+      if (this.colleges.length > 1) {
+        console.log("searchObj.college :>> ", this.searchObj.college);
+        return;
+      }
+      let res = await getCollegeList();
+      console.log("res.content.list_data :>> ", res.content.list_data);
+      res.content.list_data.forEach(element => {
+        this.colleges.push(element);
+      });
+    },
     // 活动纪要提交按钮
     async submitSummary(type) {
       // 获取纪要活动内容
@@ -426,7 +504,15 @@ export default {
     },
     async getList() {
       this.tableData = [];
-      let res = await getActivityList();
+      let data = {
+        search_one_type_id: this.searchParam.search_one_type_id,
+        search_organizers_type: this.searchParam.search_organizers_type,
+        search_organizers_name: this.searchParam.search_organizers_name,
+        search_title: this.searchParam.search_title,
+        search_year: this.searchParam.search_year
+      };
+      console.log("data :>> ", data);
+      let res = await getActivityList(data);
       console.log("res111:", res);
       res.content.list_data.forEach(element => {
         if (element.one_type_id === 1) {
@@ -540,7 +626,10 @@ export default {
   margin-left: 15px;
 }
 .table_title_btn {
-  margin-right: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
 }
 .list_table {
   /* width: 100%; */
@@ -620,5 +709,19 @@ export default {
 }
 .summaryDialog >>> textarea {
   height: 200px;
+}
+.advance_search >>> .el-icon-d-arrow-right {
+  transform: rotate(-90deg);
+}
+.advance_search:focus >>> .el-icon-d-arrow-right {
+  transform: rotate(90deg);
+}
+.search_box {
+  margin-right: 75px;
+  display: flex;
+}
+.search_input {
+  width: 290px;
+  margin-right: 5px;
 }
 </style>

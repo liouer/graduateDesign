@@ -45,7 +45,9 @@
                 >退出账号
               </el-button>
             </div>
-            <el-button slot="reference">Hello，{{ username }}</el-button>
+            <el-button slot="reference"
+              >{{ username }}：{{ college_name }}</el-button
+            >
           </el-popover>
         </div>
       </el-header>
@@ -96,6 +98,10 @@ export default {
     username() {
       return JSON.parse(localStorage.getItem("userInfo")).college_admin_data
         .username;
+    },
+    college_name() {
+      return JSON.parse(localStorage.getItem("userInfo")).college_admin_data
+        .college_name;
     }
   },
   mounted() {
