@@ -121,6 +121,17 @@
         </el-table-column>
         <el-table-column width="55px"> </el-table-column>
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count"
+          :page-size="30"
+          @current-change="changePage"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
     <div class="dialog">
       <el-dialog title="修改学生账号" :visible.sync="addFormVisible">
@@ -179,6 +190,8 @@ import {
 export default {
   data() {
     return {
+      page: 1,
+      tableData_count: 0,
       tableData: [],
       isStu: false,
       addFormVisible: false,
@@ -200,21 +213,12 @@ export default {
     this.getList();
     this.selectColleges();
   },
-  watch: {
-    // "searchUserParam.search_college_id": {
-    //   handler(newVal) {
-    //     this.getList();
-    //   },
-    //   deep: true
-    // },
-    // "searchUserParam.search_name": {
-    //   handler(newVal) {
-    //     this.getList();
-    //   },
-    //   deep: true
-    // }
-  },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      this.page = page;
+      this.getList();
+    },
     // 将搜索框重置再刷新列表
     freshUserList() {
       Object.assign(
@@ -290,9 +294,18 @@ export default {
     // 获取学生账号列表
     async getList() {
       this.tableData = [];
-      let data = this.searchUserParam;
+      let data = {
+        page: this.page,
+        search_college_id: this.searchUserParam.search_college_id,
+        search_name: this.searchUserParam.search_name,
+        search_phone: this.searchUserParam.search_phone,
+        search_sno: this.searchUserParam.search_sno,
+        search_class: this.searchUserParam.search_class,
+        search_type: 1
+      };
       console.log("data :>> ", data);
       let res = await getUserList(data);
+      this.tableData_count = res.content.data_count;
       console.log("res111:", res);
       res.content.list_data.forEach(element => {
         // 筛选用户列表里的学生账号

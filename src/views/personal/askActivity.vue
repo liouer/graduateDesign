@@ -73,6 +73,17 @@
           </template>
         </el-table-column>
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count"
+          :page-size="30"
+          @current-change="changePage"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
     <div class="addAskDialog">
       <el-dialog title="提交活动申述" :visible.sync="askFormVisible">
@@ -138,6 +149,7 @@ import {
 export default {
   data() {
     return {
+      tableData_count: 0,
       tableData: [], //申述列表数据
       form: {}, // 提交申述表单数据
       askFormVisible: false, //提交申述框
@@ -150,6 +162,13 @@ export default {
     this.selectColleges();
   },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      let data = {
+        page: page
+      };
+      this.getList(data);
+    },
     // 取消申述按钮
     async cancelAsk(index, row) {
       let data = {
@@ -221,6 +240,7 @@ export default {
     async getList() {
       this.tableData = [];
       let res = await getStatementList();
+      this.tableData_count = res.content.data_count;
       console.log("res:", res);
       res.content.list_data.forEach(element => {
         this.tableData.push(element);

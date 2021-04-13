@@ -313,10 +313,10 @@ export async function cancelStatementAction(data) {
     return res.data
 }
 
-// 用户：获取活动章程
-export async function userGetActivitySummary(data) {
+// 用户：发布评论
+export async function submitCommentAction(data) {
     const res = await request({
-        url: '/userGetActivitySummary',
+        url: '/submitCommentAction',
         method: 'post',
         data: {
             token: localStorage.getItem('token'),
@@ -325,7 +325,6 @@ export async function userGetActivitySummary(data) {
     })
     return res.data
 }
-
 
 // 活动管理员端
 // 获取活动列表
@@ -396,7 +395,7 @@ export async function getActivityJoinList(data) {
     return res.data
 }
 
-// 活动管理员：设置活动纪要
+// 活动管理员：发布活动纪要
 export async function setActivitySummaryAction(data) {
     const res = await request({
         url: '/setActivitySummaryAction',
@@ -409,13 +408,12 @@ export async function setActivitySummaryAction(data) {
     return res.data
 }
 
-// 活动管理员：设置活动纪要
+// 公共接口：获取活动纪要
 export async function getActivitySummaryAction(data) {
     const res = await request({
         url: '/getActivitySummaryAction',
         method: 'post',
         data: {
-            token: localStorage.getItem('token'),
             ...data
         },
     })
@@ -435,6 +433,32 @@ export async function getCollegeStatementList(data) {
     return res.data
 }
 
+// 活动管理员：excel导入学生用户接口
+export async function importStudentUserAction(data) {
+    const res = await request({
+        url: '/importStudentUserAction',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 活动管理员：excel导入教职工用户接口
+// export async function importStudentUserAction(data) {
+//     const res = await request({
+//         url: '/importStudentUserAction',
+//         method: 'post',
+//         data: {
+//             token: localStorage.getItem('token'),
+//             ...data
+//         },
+//     })
+//     return res.data
+// }
+
 // 活动管理员：处理申述接口
 export async function handleJoinStatementAction(data) {
     const res = await request({
@@ -452,6 +476,118 @@ export async function handleJoinStatementAction(data) {
 export async function saveActivitySummaryDraftAction(data) {
     const res = await request({
         url: '/saveActivitySummaryDraftAction',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 活动管理员：活动删除接口
+export async function deleteCollegeActivity(data) {
+    const res = await request({
+        url: '/deleteCollegeActivity',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 活动管理员：活动修改接口
+export async function editCollegeActivity(data) {
+    const res = await request({
+        url: '/editCollegeActivity',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 活动管理员：提交活动banner图
+export async function submitBannerAction(data) {
+    const res = await request({
+        url: '/submitBannerAction',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 公共接口：获取所有活动
+export async function getAllActivityList(data) {
+    const res = await request({
+        url: '/getAllActivityList',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 公共接口：获取banner图
+export async function getActivityPictureList(data) {
+    const res = await request({
+        url: '/getActivityPictureList',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 公共接口：获取活动用户评论列表
+export async function getActivityComment(data) {
+    const res = await request({
+        url: '/getActivityComment',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 公共接口：获取活动用户上传的图片列表
+export async function getUserActivityPictureList(data) {
+    const res = await request({
+        url: '/getUserActivityPictureList',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 公共接口：上传图片接口
+export async function uploadActivityImageAction(data) {
+    const res = await request({
+        url: '/uploadActivityImageAction',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 活动管理员：删除评论
+export async function collegeDeleteActivityComment(data) {
+    const res = await request({
+        url: '/collegeDeleteActivityComment',
         method: 'post',
         data: {
             token: localStorage.getItem('token'),

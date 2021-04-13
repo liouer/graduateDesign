@@ -92,7 +92,7 @@ export default {
                   JSON.stringify(res.data.content)
                 );
                 console.log("token:", localStorage.getItem("token"));
-                this.$router.push({ path: "/personal" });
+                this.$router.push({ path: "/personal/activityRecord" });
               } else {
                 this.$message(res.data.message);
               }
@@ -113,7 +113,7 @@ export default {
                   JSON.stringify(res.data.content)
                 );
                 console.log("token:", localStorage.getItem("token"));
-                this.$router.push({ path: "/actManager" });
+                this.$router.push({ path: "/actManager/moralityList" });
               } else {
                 this.$message(res.data.message);
               }

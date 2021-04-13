@@ -17,7 +17,7 @@ const routes = [
         path: 'login',
         name: 'login',
         component: () => import('@/views/login/index.vue')
-      },
+      }
     ]
   },
 
@@ -77,7 +77,19 @@ const routes = [
         path: 'handleList',
         name: 'handleList',
         component: () => import('@/views/actManager/handleList.vue')
-      }
+      },
+      // 活动广场
+      {
+        path: 'activityTalk',
+        name: 'activityTalk',
+        component: () => import('@/views/activitySquare/activityTalk.vue')
+      },
+      // 证明核实
+      {
+        path: 'checkAct',
+        name: 'checkAct',
+        component: () => import('@/views/actManager/checkAct.vue')
+      },
     ]
   },
 
@@ -103,9 +115,24 @@ const routes = [
       {
         path: 'activityTalk',
         name: 'activityTalk',
-        component: () => import('@/views/personal/activityTalk.vue')
-      }
+        component: () => import('@/views/activitySquare/activityTalk.vue')
+      },
 
+    ]
+  },
+
+  // 活动广场模块
+  {
+    path: '/activitySquare',
+    name: 'activitySquare',
+    component: () => import('@/views/activitySquare/activityTalk.vue'),
+    children: [
+      // 活动详情
+      {
+        path: 'actDetail',
+        name: 'actDetail',
+        component: () => import('@/views/activitySquare/actDetail.vue')
+      }
     ]
   }
 

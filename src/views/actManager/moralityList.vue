@@ -100,7 +100,7 @@
       </el-table-column>
       <el-table-column sortable prop="type_str" label="对象类型">
       </el-table-column>
-      <el-table-column label="操作" width="300px">
+      <el-table-column label="操作" width="380px">
         <template slot-scope="scope">
           <el-popover placement="bottom" width="120" trigger="hover">
             <div>
@@ -135,13 +135,46 @@
             style="margin-left: 10px"
             size="mini"
             @click="activityTalkBtn(scope.$index, tableData)"
-            >活动展示详情</el-button
+            >活动展示</el-button
           >
+          <el-popover
+            placement="bottom"
+            width="80"
+            trigger="hover"
+            style="margin-left: 10px"
+          >
+            <div>
+              <el-button
+                class="header_btn"
+                size="mini"
+                @click="modifyActivity(scope.$index, tableData)"
+                >编辑</el-button
+              >
+              <el-button
+                class="header_btn"
+                size="mini"
+                @click="deleteActivity(scope.$index, tableData)"
+                >删除</el-button
+              >
+            </div>
+            <el-button slot="reference" size="mini">活动操作</el-button>
+          </el-popover>
         </template>
       </el-table-column>
     </el-table>
+    <div style="text-align:right; margin:10px 20px">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="tableData_count"
+        :page-size="30"
+        @current-change="changePage"
+        style="padding: 10px 30px;"
+      >
+      </el-pagination>
+    </div>
     <div class="dialog">
-      <el-dialog title="添加活动记录" :visible.sync="addFormVisible">
+      <el-dialog title="编辑活动记录" :visible.sync="addFormVisible">
         <el-form :model="form">
           <el-form-item label="活动标题" :label-width="formLabelWidth">
             <el-input v-model="form.title" autocomplete="off"></el-input>
@@ -158,36 +191,19 @@
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <el-form-item label="举办方类型" :label-width="formLabelWidth">
-            <el-radio
-              :disabled="isCollegeType"
-              v-model="form.organizers_type"
-              :label="3"
-              >院级</el-radio
-            >
-            <el-radio
-              :disabled="isOrgType"
-              v-model="form.organizers_type"
-              :label="2"
-              >校级</el-radio
-            >
-            <el-radio
-              :disabled="isOrgType"
-              v-model="form.organizers_type"
-              :label="1"
-              >校外</el-radio
-            >
+          <el-form-item label="活动级别" :label-width="formLabelWidth">
+            <el-radio v-model="form.organizers_type" :label="3">院级</el-radio>
+            <el-radio v-model="form.organizers_type" :label="2">校级</el-radio>
           </el-form-item>
           <el-form-item label="举办方" :label-width="formLabelWidth">
             <el-input
-              :disabled="!isCollegeType"
               v-model="form.organizers_name"
               autocomplete="off"
             ></el-input>
           </el-form-item>
           <el-form-item label="举办学院" :label-width="formLabelWidth">
             <el-input
-              :disabled="!isCollegeType"
+              :disabled="true"
               v-model="form.college_name"
               autocomplete="off"
             ></el-input>
@@ -196,6 +212,31 @@
             <el-radio v-model="form.type" :label="1">个人</el-radio>
             <el-radio v-model="form.type" :label="2">团队</el-radio>
           </el-form-item>
+          <!-- <el-form-item label="活动封面" :label-width="formLabelWidth"> -->
+          <!-- <el-upload
+              :limit="1"
+              ref="uploadImg"
+              action="https://jsonplaceholder.typicode.com/posts/"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :file-list="fileList"
+              :auto-upload="false"
+            >
+              <el-button slot="trigger" size="small" type="primary"
+                >选取文件</el-button
+              >
+              <el-button
+                style="margin-left: 10px;"
+                size="small"
+                type="success"
+                @click="submitUpload"
+                >上传到服务器</el-button
+              >
+              <div slot="tip" class="el-upload__tip">
+                只能上传jpg/png文件，且不超过500kb
+              </div>
+            </el-upload> -->
+          <!-- </el-form-item> -->
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="addFormVisible = false">取 消</el-button>
@@ -204,21 +245,45 @@
       </el-dialog>
     </div>
     <div class="signDialog">
-      <el-dialog title="导入活动到场人员" :visible.sync="exportSignFormVisible">
-        <input
+      <el-dialog
+        title="导入活动到场人员"
+        :visible.sync="exportSignFormVisible"
+        :before-close="handleClose"
+      >
+        <!-- <input
           type="file"
           id="fileExport"
           @change="handleFileChange"
           ref="inputer"
           style="margin-left:70px;"
           accept=".xls,.xlsx"
-        />
-        <div style="margin-top:10px">请上传Excel文件</div>
+        /> -->
+        <el-upload
+          :limit="1"
+          class="upload-demo"
+          ref="upload"
+          action="http://www.liouer.top/importActivityJoinLogAction"
+          :on-change="handlePreview"
+          :on-remove="handleRemove"
+          :file-list="fileList"
+          :auto-upload="false"
+          :data="uploadSignData"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
+        >
+          <el-button slot="trigger" size="small" type="primary"
+            >选取文件</el-button
+          >
+          <div class="upload_tip">
+            只能上传.xls、.xlsx文件
+          </div>
+        </el-upload>
         <el-button
-          style="float:right;"
-          type="primary"
+          type="success"
           @click="submitAddFile"
           size="small"
+          style="float:right"
+          v-if="!isShowBtn"
           >提交</el-button
         >
       </el-dialog>
@@ -278,14 +343,20 @@
         </el-input>
         <div style="float:right; margin-top:10px">
           <el-button type="primary" plain="" @click="submitSummary(1)"
-            >提交</el-button
-          ><el-button type="primary" plain="" @click="submitSummary(0)"
-            >保存草稿</el-button
+            >发布</el-button
           >
+          <!-- <el-button type="primary" plain="" @click="submitSummary(0)"
+            >保存草稿</el-button
+          > -->
           <el-button @click="summaryFormVisible = false">取消</el-button>
         </div>
       </el-dialog>
     </div>
+    <actDetail
+      ref="actDetail"
+      :actid="activity_id"
+      :activity="activity"
+    ></actDetail>
   </div>
 </template>
 
@@ -299,11 +370,24 @@ import {
   getActivityJoinList,
   setActivitySummaryAction,
   getActivitySummaryAction,
-  saveActivitySummaryDraftAction
+  saveActivitySummaryDraftAction,
+  deleteCollegeActivity,
+  editCollegeActivity
 } from "@/api/api";
+import actDetail from "@/views/activitySquare/actDetail.vue";
+
 export default {
+  components: {
+    actDetail
+  },
   data() {
     return {
+      page: 1,
+      tableData_count: 0,
+      isEdit: false,
+      uploadSignData: {}, // 上传签到文件的data
+      fileList: [], // 上传签到文件的文件列表
+      isShowBtn: true,
       activityDetail: {},
       file: [],
       formData: {},
@@ -339,6 +423,7 @@ export default {
       isOrgType: true,
       isCollegeType: true,
       activity_id: 0,
+      activity: {},
       searchParam: {
         search_one_type_id: "",
         search_organizers_type: "",
@@ -358,6 +443,82 @@ export default {
     this.selectColleges();
   },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      this.page = page;
+      this.getList();
+    },
+    handleClose() {
+      this.fileList = [];
+      this.exportSignFormVisible = false;
+      this.isShowBtn = true;
+    },
+    // 活动删除方法
+    async deleteActivity(index, rows) {
+      this.activity_id = rows[index].activity_id;
+      console.log("this.activity_id :>> ", this.activity_id);
+      let res = await deleteCollegeActivity({ activity_id: this.activity_id });
+      if (res.code == 200) {
+        this.refresh();
+        this.$message({
+          type: "success",
+          message: res.message
+        });
+      } else {
+        this.$message({
+          type: "error",
+          message: res.message
+        });
+      }
+    },
+    // 活动编辑
+    modifyActivity(index, rows) {
+      this.addFormVisible = true;
+      this.form = rows[index];
+      this.isEdit = true;
+    },
+    // 活动广场详情
+    activityTalkBtn(index, tableData) {
+      this.activity_id = tableData[index].activity_id;
+      this.activity = tableData[index];
+      console.log("this.activity :>> ", this.activity);
+      console.log("this.activity_id :>> ", this.activity_id);
+      this.$refs["actDetail"].showDialogVisible();
+      console.log('this.$refs["actDetail"] :>> ', this.$refs["actDetail"]);
+    },
+    // 文件上传失败返回
+    uploadError(err, file, fileList) {
+      console.log("err :>> ", err);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+    },
+    // 文件上传成功返回
+    uploadSuccess(response, file, fileList) {
+      console.log("response :>> ", response);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+      if (response.code === "200") {
+        this.exportSignFormVisible = false;
+        this.$message({
+          type: "success",
+          message: response.message
+        });
+      }
+    },
+    // 点击文件列表中已上传的文件时的钩子
+    handlePreview(val, list) {
+      console.log("list :>> ", list);
+      if (list.length > 0) {
+        this.isShowBtn = false;
+        console.log("isShowBtn :>> ", this.isShowBtn);
+      }
+    },
+    handleRemove(val, list) {
+      console.log("remove:list :>> ", list);
+      if (list.length < 1) {
+        this.isShowBtn = true;
+      }
+    },
     // 刷新按钮，并重置搜索框的内容
     refresh() {
       Object.assign(this.$data.searchParam, this.$options.data().searchParam);
@@ -380,23 +541,40 @@ export default {
     },
     // 活动纪要提交按钮
     async submitSummary(type) {
-      // 获取纪要活动内容
-      let summaryContent = await getActivitySummaryAction();
-      this.summary_content = res.content.data.summary_content;
-      console.log("summaryContent :>> ", summaryContent);
-
       let data = {
         activity_id: this.activity_id,
         summary_content_draft: this.summary_content
       };
-      // 保存活动纪要
+      // 保存、提交活动纪要
       let res = await saveActivitySummaryDraftAction(data);
       console.log("res :>> ", res);
+      let res1 = await setActivitySummaryAction({
+        activity_id: this.activity_id
+      });
+      if (res1.code == 200) {
+        this.summaryFormVisible = false;
+        this.$message({
+          type: "success",
+          message: res1.message
+        });
+      } else {
+        this.$message({
+          type: "error",
+          message: res1.message
+        });
+      }
+      console.log("res1 :>> ", res1);
     },
     // 添加活动纪要框
     async summaryBox(index, row) {
       this.summaryFormVisible = true;
       this.activity_id = row[index].activity_id;
+      // 获取纪要活动内容
+      let res = await getActivitySummaryAction({
+        activity_id: this.activity_id
+      });
+      console.log("res :>> ", res);
+      // this.summary_content = res.content.data.summary_content;
     },
     // 打开查看签到框、获取签到列表
     async signedBox(index, row) {
@@ -420,11 +598,18 @@ export default {
       let res = await addActivityJoinLogAction(val);
       console.log("res :>> ", res);
       if (res.code === "200") {
+        this.signFormVisible = false;
         this.$message({
           type: "success",
-          message: "添加成功"
+          message: res.message
         });
-        this.signFormVisible = false;
+        this.addFormVisible = false;
+        this.refresh();
+      } else {
+        this.$message({
+          type: "error",
+          message: res.message
+        });
       }
     },
     // 选择文件按钮
@@ -444,8 +629,17 @@ export default {
       console.log("this.formData :>> ", this.formData);
     },
     // 提交文件按钮
-    async submitAddFile() {
-      // let res = await importActivityJoinLogAction(this.formData);
+    async submitAddFile(file) {
+      this.uploadSignData = {
+        token: localStorage.getItem("token"),
+        activity_id: this.activityDetail.activity_id,
+        file: file
+      };
+      await this.$nextTick();
+      console.log("this.uploadSignData :>> ", this.uploadSignData);
+      // let res = await importActivityJoinLogAction(this.uploadSignData);
+      console.log("this.$refs.upload :>> ", this.$refs.upload);
+      this.$refs.upload.submit();
     },
 
     //打开excel导入签到框
@@ -458,6 +652,7 @@ export default {
     //打开手工签到框
     signBox(index, row) {
       // Object.assign(this.$data.signForm, this.$options.data().signForm);
+      this.signForm = {};
       this.signFormVisible = true;
       this.activityDetail = row[index];
       console.log("row[index] :>> ", row[index]);
@@ -480,6 +675,24 @@ export default {
     async isAdd(val) {
       //执行添加接口
       val.two_type_id = 1; //活动类型二级目录，当前需求不需要，设个默认值。
+      val.cover_image = "";
+      if (this.isEdit === true) {
+        let res = await editCollegeActivity(val);
+        if (res.code === "200") {
+          this.$message({
+            type: "success",
+            message: res.message
+          });
+          this.addFormVisible = false;
+          this.refresh();
+        } else {
+          this.$message({
+            type: "error",
+            message: res.message
+          });
+        }
+        return;
+      }
       console.log("添加接口");
       // 转换数据类型传给后端
       console.log("this.form :>> ", this.form);
@@ -505,14 +718,17 @@ export default {
     async getList() {
       this.tableData = [];
       let data = {
-        search_one_type_id: this.searchParam.search_one_type_id,
+        search_one_type_id: 1,
         search_organizers_type: this.searchParam.search_organizers_type,
         search_organizers_name: this.searchParam.search_organizers_name,
         search_title: this.searchParam.search_title,
-        search_year: this.searchParam.search_year
+        search_year: this.searchParam.search_year,
+        page: this.page,
+        page_count: this.page_count
       };
       console.log("data :>> ", data);
       let res = await getActivityList(data);
+      this.tableData_count = res.content.data_count;
       console.log("res111:", res);
       res.content.list_data.forEach(element => {
         if (element.one_type_id === 1) {
@@ -665,7 +881,7 @@ export default {
   width: 80px;
 }
 .signDialog >>> .el-dialog__body {
-  height: 70px;
+  height: 110px;
 }
 .signDialog >>> .el-dialog {
   width: 30%;
@@ -723,5 +939,10 @@ export default {
 .search_input {
   width: 290px;
   margin-right: 5px;
+}
+.upload_tip {
+  font-size: 16px;
+  color: #606266;
+  margin-top: 7px;
 }
 </style>

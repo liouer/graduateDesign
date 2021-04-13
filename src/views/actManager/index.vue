@@ -21,6 +21,8 @@
             <el-menu-item index="1-3">文体活动</el-menu-item>
           </el-submenu>
           <el-menu-item index="2">申述处理</el-menu-item>
+          <el-menu-item index="3">活动广场</el-menu-item>
+          <el-menu-item index="4">证明核实</el-menu-item>
         </el-menu>
       </div>
     </el-aside>
@@ -136,6 +138,12 @@ export default {
           break;
         case "2":
           this.$router.push({ path: "/actManager/handleList" });
+          break;
+        case "3":
+          this.$router.push({ path: "/actManager/activityTalk" });
+          break;
+        case "4":
+          this.$router.push({ path: "/actManager/checkAct" });
           break;
         default:
           break;

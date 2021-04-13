@@ -84,6 +84,17 @@
         </el-table-column>
         <el-table-column width="30px"> </el-table-column>
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count1"
+          :page-size="30"
+          @current-change="changePage1"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
     <div class="listBox">
       <div class="table_title">
@@ -148,6 +159,17 @@
         </el-table-column>
         <el-table-column width="30px"> </el-table-column>
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count"
+          :page-size="30"
+          @current-change="changePage"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
     <!-- 修改账号内容弹窗 -->
     <el-dialog title="编辑账号内容" :visible.sync="dialogFormVisible">
@@ -243,6 +265,10 @@ import {
 export default {
   data() {
     return {
+      page: 1,
+      tableData_count: 0,
+      page1: 1,
+      tableData_count1: 0,
       isAct: false, // 添加账号类型控制
       dialogFormVisible: false, // 编辑框开关
       dialogFormVisible1: false, // 添加账号框开关
@@ -271,25 +297,6 @@ export default {
       // multipleSelection1: []
     };
   },
-  watch: {
-    // "searchActParam.college_id": {
-    //   handler(newVal) {
-    //     if (this.searchActParam.college_id === "") {
-    //       this.search_type = "";
-    //       this.getList1();
-    //       return;
-    //     }
-    //     if (this.searchActParam.college_id === 0) {
-    //       this.search_type = 2;
-    //       this.getList1();
-    //       return;
-    //     }
-    //     this.search_type = 1;
-    //     this.getList1();
-    //   },
-    //   deep: true
-    // }
-  },
   async mounted() {
     console.log("mounted");
     this.getList();
@@ -297,6 +304,16 @@ export default {
     this.selectColleges();
   },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      this.page = page;
+      this.getList();
+    },
+    changePage1(page1) {
+      console.log("changePage1 :>> ", page1);
+      this.page1 = page1;
+      this.getList1();
+    },
     cancelAdd() {
       this.dialogFormVisible1 = false;
       this.isAct = false;
@@ -459,9 +476,11 @@ export default {
       this.tableData = [];
       // let arr
       let res = await getBackAdminList({
-        search_username: this.searchSysParam.username
+        search_username: this.searchSysParam.username,
+        page: this.page
       });
       console.log("res111:", res.content.list_data);
+      this.tableData_count = res.content.data_count;
       res.content.list_data.forEach(element => {
         this.tableData.push(element);
       });
@@ -500,8 +519,10 @@ export default {
       let res = await getCollegeAdminList({
         search_username: this.searchActParam.username,
         search_college_id: this.searchActParam.college_id,
-        search_type: this.search_type
+        search_type: this.search_type,
+        page: this.page1
       });
+      this.tableData_count1 = res.content.data_count;
       res.content.list_data.forEach(element => {
         this.tableData1.push(element);
       });

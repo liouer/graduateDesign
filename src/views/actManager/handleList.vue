@@ -35,6 +35,8 @@
           width="100px"
         >
         </el-table-column>
+        <el-table-column sortable prop="user_name" label="申述提出人">
+        </el-table-column>
         <el-table-column sortable prop="title" label="活动标题">
         </el-table-column>
         <el-table-column sortable prop="one_type_name" label="活动类型">
@@ -44,6 +46,10 @@
         <el-table-column sortable prop="organizers_name" label="举办方">
         </el-table-column>
         <el-table-column sortable prop="start_time" label="活动举办时间">
+          <template slot-scope="scope">
+            <i class="el-icon-time"></i>
+            <span style="margin-left:5px">{{ scope.row.start_time }}</span>
+          </template>
         </el-table-column>
         <el-table-column sortable prop="add_time" label="提交申述时间">
         </el-table-column>
@@ -71,6 +77,17 @@
         </el-table-column>
         <el-table-column width="20px"> </el-table-column>
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count"
+          :page-size="30"
+          @current-change="changePage"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
     <div class="addAskDialog">
       <el-dialog title="请选择通过的活动" :visible.sync="selectActBox">
@@ -129,6 +146,8 @@ import {
 export default {
   data() {
     return {
+      page: 1,
+      tableData_count: 0,
       searchStatus: [
         { label: "全部", value: "" },
         { label: "申述中", value: "0" },
@@ -153,6 +172,11 @@ export default {
     this.selectColleges();
   },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      this.page = page;
+      this.getList();
+    },
     async passBtn(index, row) {
       console.log("row[index] :>> ", row[index]);
       let data = {
@@ -223,7 +247,8 @@ export default {
     async getList() {
       this.tableData = [];
       let data = {
-        search_status: this.search_status
+        search_status: this.search_status,
+        page: this.page
       };
       let res = await getCollegeStatementList(data);
       console.log("res:", res);

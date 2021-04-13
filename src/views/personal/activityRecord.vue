@@ -18,7 +18,7 @@
             >搜索</el-button
           >
         </el-input>
-        <el-popover placement="bottom" v-model="visible">
+        <el-popover placement="bottom">
           <!-- <div> -->
           <el-form :model="searchObj">
             <el-form-item label="活动类型" :label-width="formLabelWidth">
@@ -115,6 +115,17 @@
         </el-table-column>
         <!-- <el-table-column width="55px"> </el-table-column> -->
       </el-table>
+      <div style="text-align:right; margin:10px 20px">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="tableData_count"
+          :page-size="30"
+          @current-change="changePage"
+          style="padding: 10px 30px;"
+        >
+        </el-pagination>
+      </div>
     </div>
   </div>
 </template>
@@ -124,6 +135,7 @@ import { joinActivityList, getCollegeList } from "@/api/api";
 export default {
   data() {
     return {
+      tableData_count: 0,
       tableData: [],
       searchObj: {
         title: "",
@@ -151,6 +163,13 @@ export default {
     this.selectColleges();
   },
   methods: {
+    changePage(page) {
+      console.log("changePage :>> ", page);
+      let data = {
+        page: page
+      };
+      this.getList(data);
+    },
     // 学院select框选择
     async selectColleges(val) {
       console.log("this.colleges :>> ", this.colleges);
@@ -188,6 +207,7 @@ export default {
     async getList(data) {
       this.tableData = [];
       let res = await joinActivityList(data);
+      this.tableData_count = res.content.data_count;
       console.log("res:", res);
       res.content.list_data.forEach(element => {
         this.tableData.push(element);
@@ -219,8 +239,8 @@ export default {
 }
 .list_body {
   background-color: #fff;
-  height: 94%;
   box-shadow: 0 10px 10px #888;
+  margin-bottom: 25px;
 }
 .advance_search >>> .el-icon-d-arrow-right {
   transform: rotate(-90deg);
