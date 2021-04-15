@@ -485,6 +485,10 @@ export default {
       console.log("this.activity_id :>> ", this.activity_id);
       this.$refs["actDetail"].showDialogVisible();
       console.log('this.$refs["actDetail"] :>> ', this.$refs["actDetail"]);
+      this.$refs["actDetail"].getActivityComment(); // 评论
+      this.$refs["actDetail"].getActivityPictureList(); // banner图
+      this.$refs["actDetail"].getUserActivityPictureList(); // 剪影
+      this.$refs["actDetail"].getActivitySummaryAction(); // 获取活动纪要
     },
     // 文件上传失败返回
     uploadError(err, file, fileList) {
@@ -613,21 +617,21 @@ export default {
       }
     },
     // 选择文件按钮
-    handleFileChange(e) {
-      console.log("e :>> ", e);
-      let inputDOM = this.$refs.inputer;
-      this.file = inputDOM.files[0]; // 通过DOM取文件数据
-      let size = Math.floor(this.file.size / 1024); //计算文件的大小
-      this.formData = new FormData(); //new一个formData事件
-      this.formData.append("file", this.file); //将file属性添加到formData里 //此时formData就是我们要向后台传的参数了
-      this.formData.append("activity_id", this.activityDetail.activity_id);
-      console.log(
-        "this.activityDetail.activity_id :>> ",
-        this.activityDetail.activity_id
-      );
-      console.log("this.file :>> ", this.file);
-      console.log("this.formData :>> ", this.formData);
-    },
+    // handleFileChange(e) {
+    //   console.log("e :>> ", e);
+    //   let inputDOM = this.$refs.inputer;
+    //   this.file = inputDOM.files[0]; // 通过DOM取文件数据
+    //   let size = Math.floor(this.file.size / 1024); //计算文件的大小
+    //   this.formData = new FormData(); //new一个formData事件
+    //   this.formData.append("file", this.file); //将file属性添加到formData里 //此时formData就是我们要向后台传的参数了
+    //   this.formData.append("activity_id", this.activityDetail.activity_id);
+    //   console.log(
+    //     "this.activityDetail.activity_id :>> ",
+    //     this.activityDetail.activity_id
+    //   );
+    //   console.log("this.file :>> ", this.file);
+    //   console.log("this.formData :>> ", this.formData);
+    // },
     // 提交文件按钮
     async submitAddFile(file) {
       this.uploadSignData = {

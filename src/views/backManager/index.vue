@@ -185,6 +185,9 @@ export default {
   line-height: 60px;
   height: 100%;
 }
+.el-menu {
+  border-right: 0;
+}
 .el-menu-item {
   text-decoration: none;
   font-size: 16px;

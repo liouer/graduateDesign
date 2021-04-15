@@ -10,7 +10,9 @@
     </div>
     <div class="table_head">
       <div class="table_title_btn">
-        <el-button type="primary" plain size="medium">Excel导入账号</el-button>
+        <el-button type="primary" plain size="medium" @click="showDialog()"
+          >Excel导入账号</el-button
+        >
         <el-button type="primary" plain size="medium" @click="showBox(1)"
           >手动录入账号</el-button
         >
@@ -50,7 +52,22 @@
                 </el-option>
               </el-select>
             </el-form-item>
-
+            <el-form-item label="专业">
+              <el-select
+                v-model="searchUserParam.search_major_id"
+                placeholder="请选择专业"
+                size="small"
+                @click.native="selectColleges(searchUserParam.search_major_id)"
+              >
+                <el-option
+                  v-for="item in majors"
+                  :key="item.major_id"
+                  :label="item.name"
+                  :value="item.major_id"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="账号">
               <el-input
                 size="small"
@@ -103,8 +120,12 @@
         <el-table-column prop="college_name" label="学院" sortable>
         </el-table-column>
         <el-table-column prop="grade" label="年级" sortable> </el-table-column>
-        <el-table-column prop="class" label="专业班级" sortable>
-        </el-table-column>
+        <el-table-column
+          prop="major_name"
+          label="专业"
+          sortable
+        ></el-table-column>
+        <el-table-column prop="class" label="班级" sortable> </el-table-column>
         <el-table-column prop="phone" label="电话" sortable> </el-table-column>
         <el-table-column label="操作" width="150px">
           <template slot-scope="scope">
@@ -134,7 +155,7 @@
       </div>
     </div>
     <div class="dialog">
-      <el-dialog title="修改学生账号" :visible.sync="addFormVisible">
+      <el-dialog title="学生账号信息" :visible.sync="addFormVisible">
         <el-form :model="form">
           <el-form-item label="学号" :label-width="formLabelWidth">
             <el-input v-model="form.sno" autocomplete="off"></el-input>
@@ -163,7 +184,18 @@
           <el-form-item label="年级" :label-width="formLabelWidth">
             <el-input v-model="form.grade" autocomplete="off"></el-input>
           </el-form-item>
-          <el-form-item label="专业班级" :label-width="formLabelWidth">
+          <el-form-item label="专业" :label-width="formLabelWidth">
+            <el-select v-model="form.major_id" placeholder="请选择学院">
+              <el-option
+                v-for="item in majors"
+                :key="item.major_id"
+                :label="item.name"
+                :value="item.major_id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="班级" :label-width="formLabelWidth">
             <el-input v-model="form.class" autocomplete="off"></el-input>
           </el-form-item>
           <el-form-item label="电话" :label-width="formLabelWidth">
@@ -176,6 +208,42 @@
         </div>
       </el-dialog>
     </div>
+    <div class="inputDialog">
+      <el-dialog
+        title="导入学生信息"
+        :visible.sync="exportFormVisible"
+        :before-close="handleClose"
+      >
+        <el-upload
+          :limit="1"
+          class="upload-demo"
+          ref="upload"
+          action="http://www.liouer.top/importStudentUserAction"
+          :on-change="handlePreview"
+          :on-remove="handleRemove"
+          :file-list="fileList"
+          :auto-upload="false"
+          :data="uploadData"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
+        >
+          <el-button slot="trigger" size="small" type="primary"
+            >选取文件</el-button
+          >
+          <div class="upload_tip">
+            只能上传.xls、.xlsx文件
+          </div>
+        </el-upload>
+        <el-button
+          type="success"
+          @click="submitAddFile"
+          size="small"
+          style="float:right"
+          v-if="!isShowBtn"
+          >提交</el-button
+        >
+      </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -185,11 +253,16 @@ import {
   deleteUserAction,
   addUserAction,
   getCollegeList,
-  editUserAction
+  editUserAction,
+  getMajorList
 } from "@/api/api";
 export default {
   data() {
     return {
+      isShowBtn: true,
+      fileList: [], // 上传签到文件的文件列表
+      uploadData: {}, // 上传签到文件的data
+      exportFormVisible: false,
       page: 1,
       tableData_count: 0,
       tableData: [],
@@ -198,6 +271,7 @@ export default {
       form: {},
       formLabelWidth: "120px",
       colleges: [],
+      majors: [],
       boxType: 0,
       searchUserParam: {
         search_college_id: "",
@@ -205,6 +279,7 @@ export default {
         search_phone: "",
         search_sno: "",
         search_class: "",
+        search_major_id: "",
         search_type: 1
       }
     };
@@ -212,8 +287,81 @@ export default {
   mounted() {
     this.getList();
     this.selectColleges();
+    this.selectMajor();
+  },
+  watch: {
+    "form.college_id"(newVal, oldVal) {
+      console.log("newVal :>> ", newVal);
+      console.log("oldVal :>> ", oldVal);
+      // oldVal是为真时，即不是第一次进来
+      if (oldVal) {
+        this.majors = [];
+        this.form.major_id = "";
+        this.selectMajor(newVal);
+      }
+    },
+    "searchUserParam.search_college_id"(newVal, oldVal) {
+      console.log("newVal :>> ", newVal);
+      this.majors = [];
+      this.searchUserParam.search_major_id = "";
+      this.selectMajor(newVal);
+    }
   },
   methods: {
+    // 文件上传失败返回
+    uploadError(err, file, fileList) {
+      console.log("err :>> ", err);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+    },
+    // 文件上传成功返回
+    uploadSuccess(response, file, fileList) {
+      console.log("response :>> ", response);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+      if (response.code === "200") {
+        this.exportFormVisible = false;
+        this.getList();
+        this.$message({
+          type: "success",
+          message: response.message
+        });
+      }
+    },
+    // 提交文件按钮
+    async submitAddFile(file) {
+      this.uploadData = {
+        token: localStorage.getItem("token"),
+        file: file
+      };
+      await this.$nextTick();
+      console.log("this.uploadData :>> ", this.uploadData);
+      console.log("this.$refs.upload :>> ", this.$refs.upload);
+      this.$refs.upload.submit();
+    },
+    // 点击文件列表中已上传的文件时的钩子
+    handlePreview(val, list) {
+      console.log("list :>> ", list);
+      if (list.length > 0) {
+        this.isShowBtn = false;
+        console.log("isShowBtn :>> ", this.isShowBtn);
+      }
+    },
+    handleRemove(val, list) {
+      console.log("remove:list :>> ", list);
+      if (list.length < 1) {
+        this.isShowBtn = true;
+      }
+    },
+    handleClose() {
+      this.fileList = [];
+      this.exportFormVisible = false;
+      this.isShowBtn = true;
+    },
+    showDialog() {
+      this.uploadData = "";
+      this.exportFormVisible = true;
+    },
     changePage(page) {
       console.log("changePage :>> ", page);
       this.page = page;
@@ -243,6 +391,23 @@ export default {
       console.log("res.content.list_data :>> ", res.content.list_data);
       res.content.list_data.forEach(element => {
         this.colleges.push(element);
+      });
+    },
+    // 专业select框选择
+    async selectMajor(val) {
+      console.log("this.majors :>> ", this.majors);
+      // 避免多次请求接口
+      if (this.majors.length > 1) {
+        console.log("searchUserParam.major :>> ", this.searchUserParam.major);
+        return;
+      }
+      let data = {
+        search_college_id: val
+      };
+      let res = await getMajorList(data);
+      console.log("res.content.list_data :>> ", res.content.list_data);
+      res.content.list_data.forEach(element => {
+        this.majors.push(element);
       });
     },
     handleSelectionChange(val) {
@@ -301,6 +466,7 @@ export default {
         search_phone: this.searchUserParam.search_phone,
         search_sno: this.searchUserParam.search_sno,
         search_class: this.searchUserParam.search_class,
+        search_major_id: this.searchUserParam.search_major_id,
         search_type: 1
       };
       console.log("data :>> ", data);
@@ -426,5 +592,46 @@ export default {
 }
 .advance_search:focus >>> .el-icon-d-arrow-right {
   transform: rotate(90deg);
+}
+.inputDialog >>> .el-dialog__body {
+  height: 110px;
+}
+.inputDialog >>> .el-dialog {
+  width: 30%;
+}
+.inputDialog >>> .el-form-item__content {
+  display: flex;
+}
+.inputDialog >>> .el-input {
+  width: 65%;
+}
+.inputDialog >>> .el-input__inner {
+  width: 75%;
+}
+.upload {
+  display: inline-block;
+  width: 70px;
+  height: 38px;
+  line-height: 38px;
+  background: #3a8ff0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+}
+/*input 标签有默认的宽高border,outline*/
+.upload > input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*透明度为0*/
+  opacity: 0;
+  cursor: pointer;
+}
+.upload_tip {
+  font-size: 16px;
+  color: #606266;
+  margin-top: 7px;
 }
 </style>

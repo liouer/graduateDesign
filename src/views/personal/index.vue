@@ -73,7 +73,14 @@
               autocomplete="off"
             ></el-input>
           </el-form-item>
-          <el-form-item label="专业班级：" :label-width="formLabelWidth">
+          <el-form-item label="专业：" :label-width="formLabelWidth">
+            <el-input
+              readonly
+              v-model="form.major"
+              autocomplete="off"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="班级：" :label-width="formLabelWidth">
             <el-input
               readonly
               v-model="form.class"

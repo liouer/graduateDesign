@@ -10,7 +10,9 @@
     </div>
     <div class="table_title_btn">
       <div class="title_btn">
-        <el-button type="primary" plain size="medium">Excel导入账号</el-button>
+        <el-button type="primary" plain size="medium" @click="showDialog()"
+          >Excel导入账号</el-button
+        >
         <el-button type="primary" plain size="medium" @click="showBox(1)"
           >手动录入账号</el-button
         >
@@ -130,7 +132,7 @@
       </el-pagination>
     </div>
     <div class="dialog">
-      <el-dialog title="修改教师账号" :visible.sync="addFormVisible">
+      <el-dialog title="教职工账号信息" :visible.sync="addFormVisible">
         <el-form :model="form">
           <el-form-item label="工号（账号）" :label-width="formLabelWidth">
             <el-input v-model="form.sno" autocomplete="off"></el-input>
@@ -145,6 +147,17 @@
           <el-form-item label="姓名" :label-width="formLabelWidth">
             <el-input v-model="form.name" autocomplete="off"></el-input>
           </el-form-item>
+          <el-form-item label="学院" :label-width="formLabelWidth">
+            <el-select v-model="form.college_id" placeholder="请选择学院">
+              <el-option
+                v-for="item in colleges"
+                :key="item.college_id"
+                :label="item.name"
+                :value="item.college_id"
+              >
+              </el-option>
+            </el-select>
+          </el-form-item>
           <el-form-item label="电话" :label-width="formLabelWidth">
             <el-input v-model="form.phone" autocomplete="off"></el-input>
           </el-form-item>
@@ -153,6 +166,42 @@
           <el-button @click="addFormVisible = false">取 消</el-button>
           <el-button type="primary" @click="isAdd(form)">确 定</el-button>
         </div>
+      </el-dialog>
+    </div>
+    <div class="inputDialog">
+      <el-dialog
+        title="导入教职工信息"
+        :visible.sync="exportFormVisible"
+        :before-close="handleClose"
+      >
+        <el-upload
+          :limit="1"
+          class="upload-demo"
+          ref="upload"
+          action="http://www.liouer.top/importTeacherUserAction"
+          :on-change="handlePreview"
+          :on-remove="handleRemove"
+          :file-list="fileList"
+          :auto-upload="false"
+          :data="uploadData"
+          :on-success="uploadSuccess"
+          :on-error="uploadError"
+        >
+          <el-button slot="trigger" size="small" type="primary"
+            >选取文件</el-button
+          >
+          <div class="upload_tip">
+            只能上传.xls、.xlsx文件
+          </div>
+        </el-upload>
+        <el-button
+          type="success"
+          @click="submitAddFile"
+          size="small"
+          style="float:right"
+          v-if="!isShowBtn"
+          >提交</el-button
+        >
       </el-dialog>
     </div>
   </div>
@@ -169,6 +218,10 @@ import {
 export default {
   data() {
     return {
+      isShowBtn: true,
+      fileList: [], // 上传签到文件的文件列表
+      uploadData: {}, // 上传签到文件的data
+      exportFormVisible: false,
       page: 1,
       tableData_count: 0,
       tableData: [],
@@ -190,8 +243,66 @@ export default {
   },
   mounted() {
     this.getList();
+    this.selectColleges();
   },
   methods: {
+    /* 文件上传 start */
+    // 文件上传失败返回
+    uploadError(err, file, fileList) {
+      console.log("err :>> ", err);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+    },
+    // 文件上传成功返回
+    uploadSuccess(response, file, fileList) {
+      console.log("response :>> ", response);
+      console.log("file :>> ", file);
+      console.log("fileList :>> ", fileList);
+      if (response.code === "200") {
+        this.exportFormVisible = false;
+        this.getList();
+        this.$message({
+          type: "success",
+          message: response.message
+        });
+      }
+    },
+    // 提交文件按钮
+    async submitAddFile(file) {
+      this.uploadData = {
+        token: localStorage.getItem("token"),
+        file: file
+      };
+      await this.$nextTick();
+      console.log("this.uploadData :>> ", this.uploadData);
+      console.log("this.$refs.upload :>> ", this.$refs.upload);
+      this.$refs.upload.submit();
+    },
+    // 点击文件列表中已上传的文件时的钩子
+    handlePreview(val, list) {
+      console.log("list :>> ", list);
+      if (list.length > 0) {
+        this.isShowBtn = false;
+        console.log("isShowBtn :>> ", this.isShowBtn);
+      }
+    },
+    handleRemove(val, list) {
+      console.log("remove:list :>> ", list);
+      if (list.length < 1) {
+        this.isShowBtn = true;
+      }
+    },
+    handleClose() {
+      this.fileList = [];
+      this.exportFormVisible = false;
+      this.isShowBtn = true;
+    },
+    showDialog() {
+      this.uploadData = "";
+      this.exportFormVisible = true;
+    },
+    /* 文件上传end */
+
     // 改变页数时刷新列表
     changePage(page) {
       console.log("changePage :>> ", page);
@@ -384,10 +495,10 @@ export default {
 .dialog >>> .el-dialog {
   width: 30%;
 }
-/* .dialog >>> .el-select {
+.dialog >>> .el-select {
   display: block;
   width: 300px;
-} */
+}
 .dialog >>> .el-input {
   display: block;
   margin-left: 25px;
@@ -408,5 +519,46 @@ export default {
 }
 .advance_search:focus >>> .el-icon-d-arrow-right {
   transform: rotate(90deg);
+}
+.inputDialog >>> .el-dialog__body {
+  height: 110px;
+}
+.inputDialog >>> .el-dialog {
+  width: 30%;
+}
+.inputDialog >>> .el-form-item__content {
+  display: flex;
+}
+.inputDialog >>> .el-input {
+  width: 65%;
+}
+.inputDialog >>> .el-input__inner {
+  width: 75%;
+}
+.upload {
+  display: inline-block;
+  width: 70px;
+  height: 38px;
+  line-height: 38px;
+  background: #3a8ff0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+}
+/*input 标签有默认的宽高border,outline*/
+.upload > input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /*透明度为0*/
+  opacity: 0;
+  cursor: pointer;
+}
+.upload_tip {
+  font-size: 16px;
+  color: #606266;
+  margin-top: 7px;
 }
 </style>

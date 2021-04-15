@@ -485,6 +485,10 @@ export default {
       console.log("this.activity_id :>> ", this.activity_id);
       this.$refs["actDetail"].showDialogVisible();
       console.log('this.$refs["actDetail"] :>> ', this.$refs["actDetail"]);
+      this.$refs["actDetail"].getActivityComment(); // 评论
+      this.$refs["actDetail"].getActivityPictureList(); // banner图
+      this.$refs["actDetail"].getUserActivityPictureList(); // 剪影
+      this.$refs["actDetail"].getActivitySummaryAction(); // 获取活动纪要
     },
     // 文件上传失败返回
     uploadError(err, file, fileList) {

@@ -25,7 +25,7 @@
                   size="small"
                   plain
                   style="font-size:14px; margin-bottom:3px"
-                  @click="isShowBannerBox = true"
+                  @click="isShowBanner()"
                   >设置大图</el-button
                 >
               </div>
@@ -56,6 +56,7 @@
                   活动纪要：
                   <p>
                     {{ summary.summary_content }}
+                    <span style="color:#999">({{ summary.summary_time }})</span>
                   </p>
                 </div>
                 <!-- <div>活动参与人数：{{}}</div> -->
@@ -72,15 +73,16 @@
                       >精彩剪影</span
                     ></el-divider
                   >
-
-                  <el-button size="mini">我要上传</el-button>
+                  <el-button size="mini" @click="isShowUpPic()"
+                    >我要上传</el-button
+                  >
                 </div>
                 <div class="talkImgsBox">
-                  <div v-for="img in talkimgs" :key="img.index">
+                  <div v-for="(img, index) in talkimgs" :key="img.index">
                     <el-image
                       style="width: 120px; height: 120px; margin: 3px"
-                      :src="img"
-                      :preview-src-list="talkimgs"
+                      :src="img.url"
+                      :preview-src-list="[talkimgs[index].url]"
                     >
                     </el-image>
                   </div>
@@ -177,6 +179,7 @@
       <!-- banner展示 -->
     </el-dialog>
     <div>
+      <!-- 活动banner图上传框 -->
       <el-dialog :visible.sync="isShowBannerBox" width="500px">
         <el-upload
           ref="upload"
@@ -191,18 +194,37 @@
           :limit="5"
         >
           <el-button size="small" type="primary">选择图片</el-button>
-          <el-button
-            style="margin-left: 50px;"
-            size="small"
-            type="success"
-            @click="submitUpload"
-            >点击发布</el-button
-          >
-
           <div slot="tip" class="el-upload__tip">
             只能上传jpg/png文件，最多5张。
           </div>
         </el-upload>
+        <el-button size="small" type="success" @click="submitUpload"
+          >点击发布</el-button
+        >
+      </el-dialog>
+
+      <!-- 精彩剪影上传框 -->
+      <el-dialog :visible.sync="isShowUpPicrBox" width="500px">
+        <el-upload
+          ref="upload"
+          class="upload-demo"
+          action="http://www.liouer.top/uploadActivityImageAction"
+          :on-success="handleSuccess"
+          :on-change="handleChange"
+          :auto-upload="false"
+          :file-list="image"
+          :data="imageUploadData"
+          list-type="picture"
+          :limit="5"
+        >
+          <el-button size="small" type="primary">选择图片</el-button>
+          <div slot="tip" class="el-upload__tip">
+            只能上传jpg/png文件，最多5张。
+          </div>
+        </el-upload>
+        <el-button size="small" type="success" @click="submitUploadImage"
+          >点击发布</el-button
+        >
       </el-dialog>
     </div>
   </div>
@@ -215,7 +237,10 @@ import {
   getActivitySummaryAction,
   uploadActivityImageAction,
   submitBannerAction,
-  collegeDeleteActivityComment
+  collegeDeleteActivityComment,
+  getActivityPictureList,
+  submitUserActivityPictureAction,
+  getUserActivityPictureList
 } from "@/api/api";
 export default {
   name: "actDetail",
@@ -229,31 +254,24 @@ export default {
       tableData_count: 0, // 评论数
       imageUploadData: {},
       image: [],
-      imageBanner: "", //图片上传成功后返回的地址，如果要同时提交两个图片地址，请用英文逗号拼接
+      imageUrl: [], //图片上传成功后返回的地址，如果要同时提交两个图片地址，请用英文逗号拼接
       summary: {},
       mytalks: [],
       mytalk: "",
       isShowBannerBox: false,
+      isShowUpPicrBox: false,
       userType: JSON.parse(localStorage.getItem("userInfo")).college_admin_data
         ? 1
         : 0, // 1为活动管理员，0为非活动管理员
       dialogVisible: false,
       imgs: [
-        { url: require("@/assets/imgs/地板吧.jpg") },
-        { url: require("@/assets/imgs/四姐妹.jpg") },
-        { url: require("@/assets/imgs/旺仔.jpg") },
-        { url: require("@/assets/imgs/截过的下象棋.jpg") },
-        { url: require("@/assets/imgs/晚饭.jpg") }
+        // { url: require("@/assets/imgs/地板吧.jpg") },
+        // { url: require("@/assets/imgs/四姐妹.jpg") },
+        // { url: require("@/assets/imgs/旺仔.jpg") },
+        // { url: require("@/assets/imgs/截过的下象棋.jpg") },
+        // { url: require("@/assets/imgs/晚饭.jpg") }
       ],
-      talkimgs: [
-        require("@/assets/imgs/地板吧.jpg"),
-        require("@/assets/imgs/四姐妹.jpg"),
-        require("@/assets/imgs/旺仔.jpg"),
-        require("@/assets/imgs/截过的下象棋.jpg"),
-        require("@/assets/imgs/晚饭.jpg"),
-        require("@/assets/imgs/地板吧.jpg"),
-        require("@/assets/imgs/四姐妹.jpg")
-      ]
+      talkimgs: []
     };
   },
   mounted() {
@@ -262,6 +280,14 @@ export default {
     // this.getUserActivityPictureList(); // 获取剪影
   },
   methods: {
+    isShowUpPic() {
+      this.imageUrl = [];
+      this.isShowUpPicrBox = true;
+    },
+    isShowBanner() {
+      this.imageUrl = [];
+      this.isShowBannerBox = true;
+    },
     // 评论分页
     changePage(page) {
       this.page = page;
@@ -286,8 +312,9 @@ export default {
       }
     },
     async handleChange(file, fileList) {
+      console.log("file :>> ", file);
       this.imageUploadData = {
-        image: file
+        image: file.raw
       };
       await this.$nextTick();
       console.log("this.imageUploadData :>> ", this.imageUploadData);
@@ -297,19 +324,58 @@ export default {
     handleSuccess(response, file, fileList) {
       console.log("图片上传返回 :>> ");
       console.log("response :>> ", response);
+      this.imageUrl.push(response.content.url);
+      console.log("this.imageUrl.toString :>> ", this.imageUrl.toString());
+      console.log("this.imageUrl :>> ", this.imageUrl);
       console.log("file :>> ", file);
       console.log("fileList :>> ", fileList);
+    },
+    // 发布精彩剪影
+    async submitUploadImage() {
+      this.uploadSignData = {
+        token: localStorage.getItem("token"),
+        activity_id: this.actid,
+        image: this.imageUrl.toString()
+      };
+      await this.$nextTick();
+      let res = await submitUserActivityPictureAction(this.uploadSignData);
+      if (res.code == 200) {
+        this.isShowUpPicrBox = false;
+        this.$message({
+          type: "success",
+          message: res.message
+        });
+        this.getUserActivityPictureList();
+      } else {
+        this.$message({
+          type: "error",
+          message: res.message
+        });
+      }
+      console.log("res :>> ", res);
     },
     // 发布banner图
     async submitUpload() {
       this.uploadSignData = {
         token: localStorage.getItem("token"),
-        activity_id: this.activityDetail.activity_id,
-        image: this.imageBanner
+        activity_id: this.actid,
+        image: this.imageUrl.toString()
       };
       await this.$nextTick();
-      // let res = await importActivityJoinLogAction(this.uploadSignData);
-      // this.$refs.upload.submit();
+      let res = await submitBannerAction(this.uploadSignData);
+      if (res.code == 200) {
+        this.isShowBannerBox = false;
+        this.$message({
+          type: "success",
+          message: res.message
+        });
+      } else {
+        this.$message({
+          type: "error",
+          message: res.message
+        });
+      }
+      console.log("res :>> ", res);
       // 提交banner图接口 获取组件action中返回的接口数据，再提交到 submitBannerAction
     },
     // 提交评论
@@ -335,6 +401,7 @@ export default {
     },
     // 获取评论
     async getActivityComment() {
+      this.mytalks = [];
       await this.$nextTick();
       console.log("111111 :>> ");
       console.log("this.actid :>> ", this.actid);
@@ -348,20 +415,40 @@ export default {
       console.log("res :>> ", res);
     },
     // 获取banner图
-    async getActivityPictureList() {},
+    async getActivityPictureList() {
+      this.imgs = [];
+      await this.$nextTick();
+      let res = await getActivityPictureList({ activity_id: this.actid });
+      console.log("res1111111111111111111 :>> ", res);
+      res.content.list.forEach(element => {
+        this.imgs.push(element);
+      });
+      console.log("this.imgs :>> ", this.imgs);
+    },
     // 获取剪影
-    async getUserActivityPictureList() {},
+    async getUserActivityPictureList() {
+      this.talkimgs = [];
+      await this.$nextTick();
+      let data = {
+        search_activity_id: this.actid
+      };
+      let res = await getUserActivityPictureList(data);
+      console.log("res2222222222 :>> ", res);
+      res.content.list_data.forEach(element => {
+        this.talkimgs.push(element);
+      });
+      console.log("this.talkimgs :>> ", this.talkimgs);
+    },
     // 获取活动纪要
     async getActivitySummaryAction() {
+      this.summary = {};
+      await this.$nextTick();
       console.log("this.actid111111111 :>> ", this.actid);
       let res1 = await getActivitySummaryAction({
         activity_id: this.actid
       });
-      if (res1.code === "200") {
-        this.summary = res1.content;
-        return;
-      }
-      this.summary = {};
+      this.summary = res1.content;
+      console.log("this.summary1111111111111 :>> ", this.summary);
     },
     showDialogVisible() {
       console.log("typeof actid", typeof this.actid);

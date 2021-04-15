@@ -596,3 +596,28 @@ export async function collegeDeleteActivityComment(data) {
     })
     return res.data
 }
+
+// 公共接口：获取专业列表
+export async function getMajorList(data) {
+    const res = await request({
+        url: '/getMajorList',
+        method: 'post',
+        data: {
+            ...data
+        },
+    })
+    return res.data
+}
+
+// 用户端：提交活动剪影
+export async function submitUserActivityPictureAction(data) {
+    const res = await request({
+        url: '/submitUserActivityPictureAction',
+        method: 'post',
+        data: {
+            token: localStorage.getItem('token'),
+            ...data
+        },
+    })
+    return res.data
+}

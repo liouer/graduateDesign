@@ -199,8 +199,8 @@ export default {
       console.log("this.activity :>> ", this.activity);
       this.$refs["actDetail"].showDialogVisible();
       this.$refs["actDetail"].getActivityComment(); // 评论
-      // this.$refs["actDetail"].getActivityPictureList(); // banner图
-      // this.$refs["actDetail"].getUserActivityPictureList(); // 剪影
+      this.$refs["actDetail"].getActivityPictureList(); // banner图
+      this.$refs["actDetail"].getUserActivityPictureList(); // 剪影
       this.$refs["actDetail"].getActivitySummaryAction(); // 获取活动纪要
 
       console.log('this.$refs["actDetail"] :>> ', this.$refs["actDetail"]);
