@@ -326,6 +326,13 @@ export default {
           type: "success",
           message: response.message
         });
+      } else {
+        this.fileList = [];
+        this.file = {};
+        this.$message({
+          type: "success",
+          message: response.content.errorTip.toString()
+        });
       }
     },
     // 提交文件按钮
