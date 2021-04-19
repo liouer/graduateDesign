@@ -111,7 +111,7 @@
 
             <div style="padding: 14px;">
               <div style="display: flow-root;">
-                <p style="float:left">举办方：{{ item.organizers_name }}</p>
+                <p style="float:left">活动类型：{{ item.one_type_name }}</p>
                 <br />
                 <p style="float:left">举办学院：{{ item.college_name }}</p>
                 <br />
@@ -152,7 +152,7 @@ import { getAllActivityList, getCollegeList } from "@/api/api";
 import actDetail from "@/views/activitySquare/actDetail.vue";
 export default {
   components: {
-    actDetail
+    actDetail,
   },
   data() {
     return {
@@ -165,19 +165,19 @@ export default {
         college_id: "",
         year: "",
         one_type_id: "",
-        organizers_type: ""
+        organizers_type: "",
       },
       select_organizers_type: [
         { value: "3", label: "院级" },
-        { value: "2", label: "校级" }
+        { value: "2", label: "校级" },
       ],
       select_one_type_id: [
         { value: "1", label: "德育活动" },
         { value: "2", label: "智育活动" },
-        { value: "3", label: "文体活动" }
+        { value: "3", label: "文体活动" },
       ],
       colleges: [],
-      formLabelWidth: "80px" //编辑框宽度
+      formLabelWidth: "80px", //编辑框宽度
     };
   },
   mounted() {
@@ -188,7 +188,7 @@ export default {
     changePage(page) {
       console.log("changePage :>> ", page);
       let data = {
-        page: page
+        page: page,
       };
       this.getList(data);
     },
@@ -215,7 +215,7 @@ export default {
       }
       let res = await getCollegeList();
       console.log("res.content.list_data :>> ", res.content.list_data);
-      res.content.list_data.forEach(element => {
+      res.content.list_data.forEach((element) => {
         this.colleges.push(element);
       });
     },
@@ -236,7 +236,7 @@ export default {
         search_organizers_type: this.searchObj.organizers_type,
         search_organizers_name: this.searchObj.organizers_name,
         search_year: this.searchObj.year,
-        search_college_id: this.searchObj.college_id
+        search_college_id: this.searchObj.college_id,
       };
       this.getList(data);
     },
@@ -245,12 +245,12 @@ export default {
       let res = await getAllActivityList(data);
       console.log("res1111111:", res);
       this.tableData_count = res.content.data_count;
-      res.content.list_data.forEach(element => {
+      res.content.list_data.forEach((element) => {
         this.tableData.push(element);
       });
       console.log("tableData:", this.tableData);
-    }
-  }
+    },
+  },
 };
 </script>
 
