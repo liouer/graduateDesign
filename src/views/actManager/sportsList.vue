@@ -372,13 +372,13 @@ import {
   getActivitySummaryAction,
   saveActivitySummaryDraftAction,
   deleteCollegeActivity,
-  editCollegeActivity
+  editCollegeActivity,
 } from "@/api/api";
 import actDetail from "@/views/activitySquare/actDetail.vue";
 
 export default {
   components: {
-    actDetail
+    actDetail,
   },
   data() {
     return {
@@ -407,7 +407,7 @@ export default {
           .college_admin_data.college_id,
         organizers_name: JSON.parse(localStorage.getItem("userInfo"))
           .college_admin_data.college_name,
-        type: 1
+        type: 1,
       }, // 添加框数据
       // fileList: [], // 文件数据
       addFormVisible: false, // 添加活动记录框
@@ -429,13 +429,13 @@ export default {
         search_organizers_type: "",
         search_organizers_name: "",
         search_title: "",
-        search_year: ""
+        search_year: "",
       },
       select_organizers_type: [
         { value: "3", label: "院级" },
-        { value: "2", label: "校级" }
+        { value: "2", label: "校级" },
       ],
-      colleges: []
+      colleges: [],
     };
   },
   mounted() {
@@ -462,12 +462,12 @@ export default {
         this.refresh();
         this.$message({
           type: "success",
-          message: res.message
+          message: res.message,
         });
       } else {
         this.$message({
           type: "error",
-          message: res.message
+          message: res.message,
         });
       }
     },
@@ -505,7 +505,14 @@ export default {
         this.exportSignFormVisible = false;
         this.$message({
           type: "success",
-          message: response.message
+          message: response.message,
+        });
+      } else {
+        this.file = {};
+        this.fileList = [];
+        this.$message({
+          type: "error",
+          message: response.message,
         });
       }
     },
@@ -539,7 +546,7 @@ export default {
       }
       let res = await getCollegeList();
       console.log("res.content.list_data :>> ", res.content.list_data);
-      res.content.list_data.forEach(element => {
+      res.content.list_data.forEach((element) => {
         this.colleges.push(element);
       });
     },
@@ -547,24 +554,24 @@ export default {
     async submitSummary(type) {
       let data = {
         activity_id: this.activity_id,
-        summary_content_draft: this.summary_content
+        summary_content_draft: this.summary_content,
       };
       // 保存、提交活动纪要
       let res = await saveActivitySummaryDraftAction(data);
       console.log("res :>> ", res);
       let res1 = await setActivitySummaryAction({
-        activity_id: this.activity_id
+        activity_id: this.activity_id,
       });
       if (res1.code == 200) {
         this.summaryFormVisible = false;
         this.$message({
           type: "success",
-          message: res1.message
+          message: res1.message,
         });
       } else {
         this.$message({
           type: "error",
-          message: res1.message
+          message: res1.message,
         });
       }
       console.log("res1 :>> ", res1);
@@ -575,10 +582,10 @@ export default {
       this.activity_id = row[index].activity_id;
       // 获取纪要活动内容
       let res = await getActivitySummaryAction({
-        activity_id: this.activity_id
+        activity_id: this.activity_id,
       });
       console.log("res :>> ", res);
-      // this.summary_content = res.content.data.summary_content;
+      this.summary_content = res.content.summary_content;
     },
     // 打开查看签到框、获取签到列表
     async signedBox(index, row) {
@@ -586,7 +593,7 @@ export default {
       this.signedFormVisible = true;
       let data = { activity_id: row[index].activity_id };
       let res = await getActivityJoinList(data);
-      res.content.list_data.forEach(element => {
+      res.content.list_data.forEach((element) => {
         this.signedForm.push(element);
       });
       console.log("this.signedForm :>> ", this.signedForm);
@@ -605,14 +612,14 @@ export default {
         this.signFormVisible = false;
         this.$message({
           type: "success",
-          message: res.message
+          message: res.message,
         });
         this.addFormVisible = false;
         this.refresh();
       } else {
         this.$message({
           type: "error",
-          message: res.message
+          message: res.message,
         });
       }
     },
@@ -637,7 +644,7 @@ export default {
       this.uploadSignData = {
         token: localStorage.getItem("token"),
         activity_id: this.activityDetail.activity_id,
-        file: file
+        file: file,
       };
       await this.$nextTick();
       console.log("this.uploadSignData :>> ", this.uploadSignData);
@@ -685,14 +692,14 @@ export default {
         if (res.code === "200") {
           this.$message({
             type: "success",
-            message: res.message
+            message: res.message,
           });
           this.addFormVisible = false;
           this.refresh();
         } else {
           this.$message({
             type: "error",
-            message: res.message
+            message: res.message,
           });
         }
         return;
@@ -704,14 +711,14 @@ export default {
       if (res.code === "200") {
         this.$message({
           type: "success",
-          message: "添加成功"
+          message: "添加成功",
         });
         this.addFormVisible = false;
         this.getList();
       } else {
         this.$message({
           type: "error",
-          message: res.message
+          message: res.message,
         });
       }
       console.log("val :>> ", val);
@@ -728,19 +735,19 @@ export default {
         search_title: this.searchParam.search_title,
         search_year: this.searchParam.search_year,
         page: this.page,
-        page_count: this.page_count
+        page_count: this.page_count,
       };
       console.log("data :>> ", data);
       let res = await getActivityList(data);
       this.tableData_count = res.content.data_count;
       console.log("res111:", res);
-      res.content.list_data.forEach(element => {
+      res.content.list_data.forEach((element) => {
         if (element.one_type_id === 3) {
           this.tableData.push(element);
         }
       });
       console.log("tableData:", this.tableData);
-    }
+    },
     // 删除用户账号
     // handleDelete(index, rows) {
     //   let user_id = rows[index].user_id;
@@ -801,7 +808,7 @@ export default {
     //     key: Date.now()
     //   });
     // }
-  }
+  },
 };
 </script>
 
