@@ -239,7 +239,7 @@
           v-if="isAct"
           type="primary"
           @click="addCollegeAdminAction(addDetail)"
-          >活动确 定</el-button
+          >确 定</el-button
         >
         <el-button v-else type="primary" @click="addBackAdminAction(addDetail)"
           >确 定</el-button

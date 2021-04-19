@@ -26,15 +26,30 @@
         <el-popover placement="bottom">
           <!-- <div> -->
           <el-form :model="searchParam">
-            <!-- <el-form-item label="活动举办年度">
+            <el-form-item label="活动时间">
               <el-date-picker
-                v-model="searchParam.year"
+                v-model="searchParam.search_year"
                 type="year"
                 placeholder="选择年份"
                 value-format="yyyy"
               >
               </el-date-picker>
-            </el-form-item> -->
+            </el-form-item>
+            <el-form-item label="活动类型">
+              <el-select
+                size="small"
+                v-model="searchParam.search_one_type_id"
+                placeholder="请选择活动类型"
+              >
+                <el-option
+                  v-for="item in select_one_type_id"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
             <el-form-item label="活动级别">
               <el-select
                 size="small"
@@ -49,13 +64,6 @@
                 >
                 </el-option>
               </el-select>
-            </el-form-item>
-            <el-form-item label="举办方">
-              <el-input
-                size="small"
-                v-model="searchParam.search_organizers_name"
-                placeholder="请输入举办方名称"
-              ></el-input>
             </el-form-item>
           </el-form>
           <!-- </div> -->
@@ -87,9 +95,13 @@
       <el-table-column width="30px"> </el-table-column>
       <el-table-column sortable prop="title" label="活动标题">
       </el-table-column>
+      <el-table-column sortable prop="one_type_name" label="活动类型">
+      </el-table-column>
       <el-table-column sortable prop="organizers_type_str" label="活动级别">
       </el-table-column>
       <el-table-column sortable prop="start_time" label="活动举办时间">
+      </el-table-column>
+      <el-table-column sortable prop="college_name" label="举办学院">
       </el-table-column>
       <el-table-column sortable prop="organizers_name" label="举办方">
       </el-table-column>
@@ -370,6 +382,11 @@ export default {
       select_organizers_type: [
         { value: "3", label: "院级" },
         { value: "2", label: "校级" }
+      ],
+      select_one_type_id: [
+        { value: "1", label: "德育活动" },
+        { value: "2", label: "智育活动" },
+        { value: "3", label: "文体活动" }
       ],
       colleges: []
     };
@@ -663,6 +680,9 @@ export default {
         page_count: this.page_count,
         search_sno: this.sno
       };
+      if (!data.search_sno) {
+        return;
+      }
       console.log("data :>> ", data);
       let res = await getAllActivityList(data);
       this.tableData_count = res.content.data_count;

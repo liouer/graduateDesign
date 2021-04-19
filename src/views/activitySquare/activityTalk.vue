@@ -36,7 +36,7 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <!-- <el-form-item label="活动举办年度" :label-width="formLabelWidth">
+            <el-form-item label="活动时间" :label-width="formLabelWidth">
               <el-date-picker
                 v-model="searchObj.year"
                 type="year"
@@ -44,7 +44,7 @@
                 value-format="yyyy"
               >
               </el-date-picker>
-            </el-form-item> -->
+            </el-form-item>
             <el-form-item label="活动级别" :label-width="formLabelWidth">
               <el-select
                 size="small"

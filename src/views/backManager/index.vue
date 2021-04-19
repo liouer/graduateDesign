@@ -84,7 +84,7 @@ export default {
       }
     },
     openModifyPassword() {
-      this.$prompt("请输入新的密码", "提示", {
+      this.$prompt("请输入新的密码", "修改密码", {
         confirmButtonText: "确定",
         cancelButtonText: "取消"
       })

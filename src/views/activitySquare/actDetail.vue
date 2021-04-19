@@ -52,7 +52,7 @@
                   <div>举办方：{{ activity.organizers_name }}</div>
                   <div>举办学院：{{ activity.organizers_name }}</div>
                 </div>
-                <div v-if="summary">
+                <div v-if="summary.summary_content">
                   活动纪要：
                   <p>
                     {{ summary.summary_content }}

@@ -31,15 +31,15 @@
         <el-popover placement="bottom">
           <!-- <div> -->
           <el-form :model="searchParam">
-            <!-- <el-form-item label="活动举办年度">
+            <el-form-item label="活动举办年度">
               <el-date-picker
-                v-model="searchParam.year"
+                v-model="searchParam.search_year"
                 type="year"
                 placeholder="选择年份"
                 value-format="yyyy"
               >
               </el-date-picker>
-            </el-form-item> -->
+            </el-form-item>
             <el-form-item label="活动级别">
               <el-select
                 size="small"
